@@ -19,12 +19,28 @@ export default class CreateStimDisplay{
 
     randomizeValues() {
 
-        let shuffledIndices = this.shuffleIndices(this.stimObject.stimValue.length);
-        this.stimObject.stimType = this.applyShuffledIndices(this.stimObject.stimType, shuffledIndices);
-        this.stimObject.stimValue = this.applyShuffledIndices(this.stimObject.stimValue, shuffledIndices);
-        this.stimObject.stimRatio = this.applyShuffledIndices(this.stimObject.stimRatio, shuffledIndices);
-        this.stimObject.stimTime = this.applyShuffledIndices(this.stimObject.stimTime, shuffledIndices);
+        const expandedStimType = []
+        const expandedStimValue = []
+        const expandedStimRatio = []
+        const expandedStimTime = []
 
+        for (let i = 0; i < this.stimObject.stimValue.length; i++){
+            const repeat = this.stimObject.stimRatio[i];
+            for (let j = 0; j < repeat; j++){
+                expandedStimType.push(this.stimObject.stimType[i]);
+                expandedStimValue.push(this.stimObject.stimValue[i]);
+                expandedStimRatio.push(1);
+                expandedStimTime.push(this.stimObject.stimTime[i]);
+            }
+        }
+
+        let shuffledIndices = this.shuffleIndices(expandedStimValue.length);
+        this.stimObject.stimType = this.applyShuffledIndices(expandedStimType, shuffledIndices);
+        this.stimObject.stimValue = this.applyShuffledIndices(expandedStimValue, shuffledIndices);
+        this.stimObject.stimRatio = this.applyShuffledIndices(expandedStimRatio, shuffledIndices);
+        this.stimObject.stimTime = this.applyShuffledIndices(expandedStimTime, shuffledIndices);
+
+        console.log(this.stimObject.stimValue);
     }
 
     shuffleIndices(length) {

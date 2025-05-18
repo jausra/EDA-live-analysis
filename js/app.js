@@ -4,8 +4,8 @@ import CreateStimDisplay from './stimDisplay.js';
 let stimOrder = 'random';
 let stimType = ['string', 'string', 'string', 'string', 'string', 'string'];
 let stimValue = ['A', 'B', 'C', 'D', 'E', 'F'];
-let stimRatio = [1, 1, 1, 1, 1, 1];
-let stimTime = [100, 100, 1000, 100, 100, 100];
+let stimRatio = [1, 1, 10, 1, 1, 1];
+let stimTime = [100, 100, 100, 100, 100, 100];
 
 const stimObject = new CreateStimObject(stimOrder, stimType, stimValue, stimRatio, stimTime);
 const displayTarget = document.getElementById("stimDisplay");
