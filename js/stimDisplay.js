@@ -40,7 +40,7 @@ export default class CreateStimDisplay{
         this.stimObject.stimRatio = this.applyShuffledIndices(expandedStimRatio, shuffledIndices);
         this.stimObject.stimTime = this.applyShuffledIndices(expandedStimTime, shuffledIndices);
 
-        console.log(this.stimObject.stimValue);
+        //console.log(this.stimObject.stimValue);
     }
 
     shuffleIndices(length) {
@@ -72,7 +72,6 @@ export default class CreateStimDisplay{
         this.timeoutID = setTimeout(() => {
             if(!this.running) return;
             this.advance();
-            this.showCurrent();
             this.scheduleNext();
         }, this.stimObject.stimTime[this.index]);
     }
@@ -94,6 +93,29 @@ export default class CreateStimDisplay{
     }
 
     showCurrent() {
-        this.displayTarget.textContent = this.stimObject.stimValue[this.index];
+        const type = this.stimObject.stimType[this.index];
+        const value = this.stimObject.stimValue[this.index];
+
+        this.displayTarget.innerHTML = '';
+
+        if(type === 'string') {
+            this.displayTarget.textContent = this.stimObject.stimValue[this.index];
+        }
+        else if (type === 'drawing') {
+            console.log(value.color);
+            console.log(value.shape);
+            const drawing = document.createElement('div');
+            drawing.style.width = '100px';
+            drawing.style.height = '100px';
+            drawing.style.backgroundColor = value.color;
+
+            if(value.shape = 'circle'){
+                drawing.style.borderRadius = '50%';
+            }
+            else if(value.shape = 'square'){
+                drawing.style.borderRadius = '0%';
+            }
+            this.displayTarget.appendChild(drawing);
+        }
     }
 }

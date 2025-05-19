@@ -2,10 +2,16 @@ import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
 
 let stimOrder = 'random';
-let stimType = ['string', 'string', 'string', 'string', 'string', 'string'];
-let stimValue = ['A', 'B', 'C', 'D', 'E', 'F'];
-let stimRatio = [1, 1, 10, 1, 1, 1];
-let stimTime = [100, 100, 100, 100, 100, 100];
+let stimType = ['drawing', 'string', 'string', 'string', 'string', 'string'];
+let stimValue = [
+    {
+        shape: 'square',
+        color: 'blue'
+    },
+    'B', 'C', 'D', 'E', 'F'
+];
+let stimRatio = [1, 1, 1, 1, 1, 1];
+let stimTime = [1000, 1000, 1000, 1000, 1000, 1000];
 
 const stimObject = new CreateStimObject(stimOrder, stimType, stimValue, stimRatio, stimTime);
 const displayTarget = document.getElementById("stimDisplay");

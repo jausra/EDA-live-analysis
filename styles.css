@@ -1,5 +1,15 @@
-body {
+html, body {
     font-family: Arial, Helvetica, sans-serif;
+    height: 100%;
+    margin: 0;
+}
+
+main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* border: solid blue; */
+    height: 94%;
 }
 
 header {
@@ -9,4 +19,34 @@ header {
 header h1 {
     font-weight: 900;
     font-size: 32px;
+}
+
+#mainContainer {
+    /* border: solid red; */
+    display: flex; 
+    flex-direction: column;
+    align-Items: center;
+    justify-content: center;
+    height: 500px;
+    width: 500px;
+}
+
+#stimDisplay {
+    display: flex;
+    align-Items: center;
+    justify-content: center;
+    height: 150px;
+    width: 500px;
+    /* border: solid green; */
+    font-size: 70px;
+    font-weight: 900;
+}
+
+#stimControl {
+    display: flex;
+    align-Items: center;
+    justify-content: center;
+    height: 50px;
+    width: 50px;
+    /* border: dashed purple; */
 }
