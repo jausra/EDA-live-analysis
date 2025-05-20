@@ -11,17 +11,31 @@
             </h1>
         </header>
         <main>
-            <div id="mainContainer">
-                <section>
-                    <div id="stimDisplay"></div>
-                </section>
-                <section>
+            <div id="container">
+                <div id="stimControlContainer">
                     <div id="stimControl">
-                        <button id="startStim">
+                        <div id="stimGenerator">
+                            <select id="stimTypeSelector">
+                                <option value="">-- Choose an type --</option>
+                            </select>
+                            <select id="stimValueShapeSelector">
+                                <option value="">-- Choose an shape --</option>
+                            </select>
+                            <select id="stimValueColorSelector">
+                                <option value="">-- Choose an color --</option>
+                            </select>
+                        </div>
+                        <button id="stimStartToggleButton">
                             Start
                         </button>
                     </div>
-                </section>
+                    <button id="stimControlToggleButton">&#9664;</button>
+                </div>
+                <div id="stimDisplayContainerWrapper">
+                    <div id="stimDisplayContainer">
+                        <div id="stimDisplay"></div>
+                    </div>
+                </div>
             </div>
         </main>
     </body>

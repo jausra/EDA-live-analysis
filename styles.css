@@ -1,15 +1,22 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 html, body {
     font-family: Arial, Helvetica, sans-serif;
-    height: 100%;
-    margin: 0;
+    height: 98%;
+    width: 100%;
 }
 
 main {
-    display: flex;
+    /* display: flex;
     align-items: center;
     justify-content: center;
-    /* border: solid blue; */
-    height: 94%;
+    border: solid blue;
+    height: 94%; */
+    height: 100%;
 }
 
 header {
@@ -21,14 +28,115 @@ header h1 {
     font-size: 32px;
 }
 
-#mainContainer {
-    /* border: solid red; */
+#container {
+    display: flex;
+    /* align-items: center;
+    justify-content: center; */
+    /* border: solid blue; */
+    height: 100%;
+}
+
+#stimControlContainer {
+    background-color: #558ec0;
+    border-radius: 20px;
+    margin: 20px;
+    height: 96%;
+    width: 50%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: width 0.5s linear;
+}
+
+#stimControlContainer.collapsed {
+    width: 30px;
+}
+
+#stimControl {
+    display: flex;
+    flex-direction: column;
+    align-Items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    transition: opacity 0.3s ease;
+}
+
+#stimControl #stimGenerator {
+    width: 90%;
+    height: 40px;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    background-color: #0277BD;
+    display: flex;
+    align-Items: center;
+    justify-content: center;
+}
+
+#stimGenerator select {
+    margin: 0 10px;
+}
+
+#stimGenerator option {
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}
+
+#stimControl button {
+    padding: 10px 20px;
+    background-color: lightblue;
+    border: none;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+#stimControlContainer.collapsed #stimControl{
+    opacity: 0;
+}
+
+#stimControlToggleButton {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    transform: translate(-100%, -50%);
+    border: none;
+    background-color: white;
+    padding: 6px;
+    z-index: 1;
+}
+
+#stimDisplayContainerWrapper {
+    flex: 1;
+    margin: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+#stimDisplayContainer {
+    background-color: #558ec0;
+    height: 100%;
+    width: 100%;
+    border-radius: 20px;
     display: flex; 
     flex-direction: column;
     align-Items: center;
     justify-content: center;
-    height: 500px;
-    width: 500px;
+    /* transition: transform 1.5s ease; */
+    /* transition: margin 1.5s 0.2s linear; */
+    transition: width 0.5s linear;
+}
+
+#stimDisplayContainerWrapper.shifted #stimDisplayContainer{
+    /* transform: translateX(25%); */
+    /* margin: 0 auto; */
+    width: 50%;
 }
 
 #stimDisplay {
@@ -37,16 +145,6 @@ header h1 {
     justify-content: center;
     height: 150px;
     width: 500px;
-    /* border: solid green; */
     font-size: 70px;
     font-weight: 900;
-}
-
-#stimControl {
-    display: flex;
-    align-Items: center;
-    justify-content: center;
-    height: 50px;
-    width: 50px;
-    /* border: dashed purple; */
 }
