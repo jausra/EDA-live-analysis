@@ -27,12 +27,17 @@ stimControlToggleButton.addEventListener("click", () => {
 //////////////////Stimulation Display Container//////////////////
 
 const stimTypeSelector = document.getElementById('stimTypeSelector');
+const stimValueWordInput = document.getElementById('stimValueWordInput');
 const stimValueShapeSelector = document.getElementById('stimValueShapeSelector');
 const stimValueColorSelector = document.getElementById('stimValueColorSelector');
+const stimRatioSelector = document.getElementById('stimRatioSelector');
+const stimTimeSelector = document.getElementById('stimTimeSelector');
 
 const stimTypeOptions = ['Word', 'Drawing'];
 const stimValueShapeOptions = ['Circle', 'Square'];
 const stimValueColorOptions = ['Red', 'Blue'];
+const stimRatioOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const stimTimeOptions = ['1 s', '2 s', '3 s', '4 s', '5 s', '6 s', '7 s', '8 s', '9 s', '10 s'];
 
 function updateOptions(stimOptions, selector){
     stimOptions.forEach(optionText => {
@@ -46,6 +51,25 @@ function updateOptions(stimOptions, selector){
 updateOptions(stimTypeOptions, stimTypeSelector);
 updateOptions(stimValueShapeOptions, stimValueShapeSelector);
 updateOptions(stimValueColorOptions, stimValueColorSelector);
+updateOptions(stimRatioOptions, stimRatioSelector);
+updateOptions(stimTimeOptions, stimTimeSelector);
+
+stimTypeSelector.addEventListener("change", () => {
+    if (stimTypeSelector.value === 'Word'){
+        stimValueWordInput.classList.remove('hidden');
+        stimValueShapeSelector.classList.add('hidden');
+        stimValueColorSelector.classList.add('hidden');
+
+    } else if (stimTypeSelector.value === 'Drawing'){
+        stimValueWordInput.classList.add('hidden');
+        stimValueShapeSelector.classList.remove('hidden');
+        stimValueColorSelector.classList.remove('hidden');
+    } else {
+        stimValueWordInput.classList.add('hidden');
+        stimValueShapeSelector.classList.add('hidden');
+        stimValueColorSelector.classList.add('hidden');
+    }
+})
 
 
 let stimOrder = 'random';

@@ -16,14 +16,22 @@
                     <div id="stimControl">
                         <div id="stimGenerator">
                             <select id="stimTypeSelector">
-                                <option value="">-- Choose an type --</option>
+                                <option value="">--Choose a type--</option>
                             </select>
-                            <select id="stimValueShapeSelector">
-                                <option value="">-- Choose an shape --</option>
+                            <select id="stimValueShapeSelector" class="hidden">
+                                <option value="">--Choose a shape--</option>
                             </select>
-                            <select id="stimValueColorSelector">
-                                <option value="">-- Choose an color --</option>
+                            <select id="stimValueColorSelector" class="hidden">
+                                <option value="">--Choose a color--</option>
                             </select>
+                            <input type="text" id="stimValueWordInput" placeholder="Enter a word" class="hidden">
+                            <select id="stimRatioSelector">
+                                <option value="">--Choose a ratio--</option>
+                            </select>
+                            <select id="stimTimeSelector">
+                                <option value="">--Choose a time--</option>
+                            </select>
+                            <button id="addStimButton">+</button>
                         </div>
                         <button id="stimStartToggleButton">
                             Start

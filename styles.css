@@ -74,8 +74,8 @@ header h1 {
     justify-content: center;
 }
 
-#stimGenerator select {
-    margin: 0 10px;
+#stimGenerator select, input {
+    margin: 0 8px;
 }
 
 #stimGenerator option {
@@ -86,7 +86,7 @@ header h1 {
     display: none;
 }
 
-#stimControl button {
+#stimStartToggleButton {
     padding: 10px 20px;
     background-color: lightblue;
     border: none;
