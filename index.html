@@ -14,24 +14,27 @@
             <div id="container">
                 <div id="stimControlContainer">
                     <div id="stimControl">
-                        <div id="stimGenerator">
-                            <select id="stimTypeSelector">
-                                <option value="">--Choose a type--</option>
-                            </select>
-                            <select id="stimValueShapeSelector" class="hidden">
-                                <option value="">--Choose a shape--</option>
-                            </select>
-                            <select id="stimValueColorSelector" class="hidden">
-                                <option value="">--Choose a color--</option>
-                            </select>
-                            <input type="text" id="stimValueWordInput" placeholder="Enter a word" class="hidden">
-                            <select id="stimRatioSelector">
-                                <option value="">--Choose a ratio--</option>
-                            </select>
-                            <select id="stimTimeSelector">
-                                <option value="">--Choose a time--</option>
-                            </select>
-                            <button id="addStimButton">+</button>
+                        <div id="stimPanel">
+                            <div id="stimGenerator">
+                                <select id="stimTypeSelector">
+                                    <option value="">--Choose a type--</option>
+                                </select>
+                                <select id="stimValueShapeSelector" class="hidden">
+                                    <option value="">--Choose a shape--</option>
+                                </select>
+                                <select id="stimValueColorSelector" class="hidden">
+                                    <option value="">--Choose a color--</option>
+                                </select>
+                                <input type="text" id="stimValueWordInput" placeholder="Enter a word" class="hidden">
+                                <select id="stimRatioSelector">
+                                    <option value="">--Choose a ratio--</option>
+                                </select>
+                                <select id="stimTimeSelector">
+                                    <option value="">--Choose a time--</option>
+                                </select>
+                                <button id="addStimButton" class="hidden">+</button>
+                            </div>
+                            <div id="stimItemContainer"></div>
                         </div>
                         <button id="stimStartToggleButton">
                             Start

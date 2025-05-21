@@ -18,7 +18,6 @@ export default class CreateStimDisplay{
     }
 
     randomizeValues() {
-
         const expandedStimType = []
         const expandedStimValue = []
         const expandedStimRatio = []
@@ -67,11 +66,13 @@ export default class CreateStimDisplay{
     }
 
     scheduleNext() {
+
         this.timeoutID = setTimeout(() => {
             if(!this.running) return;
             this.advance();
             this.scheduleNext();
         }, this.stimObject.stimTime[this.index]);
+
     }
 
     stop() {
@@ -82,6 +83,7 @@ export default class CreateStimDisplay{
     }
 
     advance() {
+        
         this.index = this.index + 1;
         if (this.index === this.stimObject.stimValue.length){
             this.index = 0;
@@ -96,21 +98,20 @@ export default class CreateStimDisplay{
 
         this.displayTarget.innerHTML = '';
 
-        if(type === 'string') {
+        if(type === 'Word') {
             this.displayTarget.textContent = this.stimObject.stimValue[this.index];
         }
-        else if (type === 'drawing') {
+        else if (type === 'Drawing') {
             const drawing = document.createElement('div');
             drawing.style.width = '100px';
             drawing.style.height = '100px';
-            drawing.style.backgroundColor = value.color;
+            drawing.style.backgroundColor = value.color.toLowerCase();
+            console.log(`color: ${value.color.toLowerCase()}`);
 
-            console.log(`a: ${this.stimObject.stimValue[this.index].shape}`)
-
-            if(value.shape === 'circle'){
+            if(value.shape === 'Circle'){
                 drawing.style.borderRadius = '50%';
             }
-            else if(value.shape === 'square'){
+            else if(value.shape === 'Square'){
                 drawing.style.borderRadius = '0%';
             }
             this.displayTarget.appendChild(drawing);

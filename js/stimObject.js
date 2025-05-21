@@ -1,5 +1,5 @@
 export default class CreateStimObject{
-    constructor(stimOrder, stimType, stimValue, stimRatio, stimTime){
+    constructor(stimOrder = 'random', stimType = [], stimValue = [], stimRatio = [], stimTime = []){
         this.stimOrder = stimOrder,
         this.stimType = stimType,
         this.stimValue = stimValue,
