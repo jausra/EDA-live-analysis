@@ -19,7 +19,7 @@ stimControlToggleButton.addEventListener("click", () => {
     }
 })
 
-const stimObject = new CreateStimObject();
+const stimObject = new CreateStimObject('random');
 
 const stimTypeSelector = document.getElementById('stimTypeSelector');
 const stimValueWordInput = document.getElementById('stimValueWordInput');
@@ -28,6 +28,29 @@ const stimValueColorSelector = document.getElementById('stimValueColorSelector')
 const stimRatioSelector = document.getElementById('stimRatioSelector');
 const stimTimeSelector = document.getElementById('stimTimeSelector');
 const addStimButton = document.getElementById('addStimButton');
+
+function checkForValidInputs() {
+    const stimType = stimTypeSelector.value;
+
+    const isRatioTimeValid = stimRatioSelector.value !== '' && stimTimeSelector.value !== '';
+
+    let isTypeValid = false;
+
+    if (stimType == "Word") {
+        isTypeValid = stimValueWordInput.value.trim() !== '';
+    } else if (stimType == "Drawing"){
+        isTypeValid = stimValueShapeSelector.value !== '' && stimValueColorSelector.value !== '';
+    }
+
+    stimValueWordInput.classList.toggle('hidden', stimType !== "Word");
+    stimValueShapeSelector.classList.toggle('hidden', stimType !== "Drawing");
+    stimValueColorSelector.classList.toggle('hidden', stimType !== "Drawing");
+
+    const allValid = stimType !== '' && isRatioTimeValid && isTypeValid;
+    addStimButton.disabled = !allValid;
+    addStimButton.classList.add('addStimButton');
+    addStimButton.classList.toggle('hidden', !allValid);
+}
 
 const stimTypeOptions = ['Word', 'Drawing'];
 const stimValueShapeOptions = ['Circle', 'Square'];
@@ -50,23 +73,35 @@ updateOptions(stimValueColorOptions, stimValueColorSelector);
 updateOptions(stimRatioOptions, stimRatioSelector);
 updateOptions(stimTimeOptions, stimTimeSelector);
 
-stimTypeSelector.addEventListener("change", () => {
-    if (stimTypeSelector.value === 'Word'){
-        addStimButton.classList.remove('hidden');
-        stimValueWordInput.classList.remove('hidden');
-        stimValueShapeSelector.classList.add('hidden');
-        stimValueColorSelector.classList.add('hidden');
-    } else if (stimTypeSelector.value === 'Drawing'){
-        addStimButton.classList.remove('hidden');
-        stimValueWordInput.classList.add('hidden');
-        stimValueShapeSelector.classList.remove('hidden');
-        stimValueColorSelector.classList.remove('hidden');
-    } else {
-        addStimButton.classList.add('hidden');
-        stimValueWordInput.classList.add('hidden');
-        stimValueShapeSelector.classList.add('hidden');
-        stimValueColorSelector.classList.add('hidden');
+console.log("Adding event listeners");
+[
+    stimTypeSelector, 
+    stimValueWordInput, 
+    stimValueShapeSelector, 
+    stimValueColorSelector, 
+    stimRatioSelector, 
+    stimTimeSelector
+].forEach(item => {
+    console.log("Element:", item);
+    item.addEventListener('change', checkForValidInputs);
+    item.addEventListener('input', checkForValidInputs);
+});
+
+checkForValidInputs();
+
+const stimRandomizerButton = document.getElementById("stimRandomizerButton");
+stimRandomizerButton.addEventListener("click", () => {
+    console.log("Random button clicked");
+    if(stimObject.stimOrder === 'random') {
+        stimObject.stimOrder = 'ordered';
+        stimRandomizerButton.textContent = 'Random: OFF';
+        stimRandomizerButton.style.backgroundColor = '#0277BD'
+    } else if (stimObject.stimOrder === 'ordered') {
+        stimObject.stimOrder = 'random';
+        stimRandomizerButton.textContent = 'Random: ON';
+        stimRandomizerButton.style.backgroundColor = '#e1c93f'
     }
+    console.log(`stimObject: ${stimObject}`);
 })
 
 function renderStimItemContainer() {
@@ -76,11 +111,15 @@ function renderStimItemContainer() {
     for (let i = 0; i < stimObject.stimType.length; i++){
         let stimItem = document.createElement('div');
         stimItem.classList.add('stimItem');
+        stimItem.dataset.index = i;
 
         if(stimObject.stimType[i] === 'Word'){
-            const word = document.createElement('span');
+            //const word = document.createElement('span');
+            const word = document.createElement('div');
             word.textContent = stimObject.stimValue[i];
+            word.classList.add('stimItemValue');
             stimItem.appendChild(word);
+
             stimItemContainer.appendChild(stimItem);
 
             //If the word is too long, shrink it
@@ -88,13 +127,14 @@ function renderStimItemContainer() {
             const wordWidth = word.scrollWidth;
             if (wordWidth > (0.9*stimItemWidth)) {
                 const scale = (0.9*stimItemWidth)/wordWidth;
-                word.style.transform = `scale(${scale})`;
+                word.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
         } else if (stimObject.stimType[i] === 'Drawing'){
             const drawing = document.createElement('div');
             drawing.style.width = '100px';
             drawing.style.height = '100px';
             drawing.style.backgroundColor = stimObject.stimValue[i].color;
+            drawing.classList.add('stimItemValue');
 
             if(stimObject.stimValue[i].shape === 'Circle'){
                 drawing.style.borderRadius = '50%';
@@ -105,6 +145,40 @@ function renderStimItemContainer() {
             stimItem.appendChild(drawing);
             stimItemContainer.appendChild(stimItem);
         };
+
+        const displayTime = document.createElement('div');
+        displayTime.textContent = `${stimObject.stimTime[i]/1000} s`;
+        displayTime.classList.add('stimItemTime');
+        stimItem.appendChild(displayTime);
+
+        if (stimObject.stimRatio[i] > 1){
+            const displayRatio = document.createElement('div');
+            displayRatio.textContent = `${stimObject.stimRatio[i]}x`;
+            displayRatio.classList.add('stimItemRatio');
+            stimItem.appendChild(displayRatio);
+        }
+
+        const deleteStimItemButton = document.createElement('button');
+        deleteStimItemButton.classList.add('deleteStimButton', 'fa-solid', 'fa-trash');
+        deleteStimItemButton.addEventListener("click", () => {
+            const index = parseInt(stimItem.dataset.index);
+            stimObject.stimType.splice(index, 1);
+            stimObject.stimValue.splice(index, 1);
+            stimObject.stimRatio.splice(index, 1);
+            stimObject.stimTime.splice(index, 1);
+
+            if (
+                stimObject.stimType.length === 0 &&
+                stimObject.stimValue.length === 0 &&
+                stimObject.stimRatio.length === 0 &&
+                stimObject.stimTime.length === 0
+            ) {
+                document.getElementById('stimStartStopButton').disabled = true;
+            }
+
+            renderStimItemContainer();
+        })
+        stimItem.appendChild(deleteStimItemButton);
     }
 }
 
@@ -116,29 +190,55 @@ addStimButton.addEventListener("click", () => {
         stimObject.stimValue.push({
             shape: stimValueShapeSelector.value,
             color: stimValueColorSelector.value
-        })
+        });
     };
     stimObject.stimRatio.push(stimRatioSelector.value);
     stimObject.stimTime.push(1000 * parseFloat(stimTimeSelector.value));
 
+    document.getElementById('stimStartStopButton').disabled = false;
     renderStimItemContainer();
 });
 
-document.getElementById("stimStartToggleButton").addEventListener("click", (e) => {
-    console.log(stimObject);
+function toggleStimControlDisable(isDisabled) {
+    document.getElementById("stimPauseResumeButton").disabled = !isDisabled;
+    document.getElementById("stimTypeSelector").disabled = isDisabled;
+    document.getElementById("stimValueShapeSelector").disabled = isDisabled;
+    document.getElementById("stimValueColorSelector").disabled = isDisabled;
+    document.getElementById("stimValueWordInput").disabled = isDisabled;
+    document.getElementById("stimRatioSelector").disabled = isDisabled;
+    document.getElementById("stimTimeSelector").disabled = isDisabled;
+    document.getElementById("addStimButton").disabled = isDisabled;
+    document.querySelectorAll('.deleteStimButton').forEach(button => {
+        button.disabled = isDisabled;
+    })
+}
+
+document.getElementById("stimStartStopButton").addEventListener("click", (e) => {
     if (!stimDisplay.running){
         stimDisplay.start();
         e.target.textContent = "Stop";
         stimDisplay.running = true;
+        toggleStimControlDisable(true);
     } else {
         stimDisplay.stop();
         e.target.textContent = "Start";
         stimDisplay.running = false;
+        toggleStimControlDisable(false);
+    }
+})
+
+document.getElementById("stimPauseResumeButton").addEventListener("click", (e) => {
+    if (stimDisplay.paused){
+        stimDisplay.resume();
+        e.target.textContent = "Pause";
+        stimDisplay.paused = false;
+    } else {
+        stimDisplay.pause();
+        e.target.textContent = "Resume";
+        stimDisplay.paused = true;
     }
 })
 
 //////////////////Stimulation Display//////////////////
-
 const displayTarget = document.getElementById("stimDisplay");
 let stimDisplay = new CreateStimDisplay(displayTarget, stimObject);
-

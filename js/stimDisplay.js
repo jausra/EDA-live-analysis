@@ -1,43 +1,54 @@
 export default class CreateStimDisplay{
 
-    constructor(displayTarget, stimObject) {
-        this.displayTarget = displayTarget,
-        this.index = 0,
-        this.previousLastValue = 0;
-        this.stimObject = stimObject,
-        this.running = false
+    constructor(displayTarget, compressedStimObject) {
+        this.displayTarget = displayTarget;
+        this.index = 0;
+        this.previousLastValue = -1;
+        this.compressedStimObject = compressedStimObject;
+        this.running = false;
+        this.paused = false;
         this.timeoutID = null;
+
+        this.expandedType = [];
+        this.expandedValue = [];
+        this.expandedTime = [];
     }
 
     start() {
-        if(this.stimObject.stimOrder === 'random'){
+        this.expandedType = [];
+        this.expandedValue = [];
+        this.expandedTime = [];
+
+        this.expandValues();
+        if(this.compressedStimObject.stimOrder === 'random') {
             this.randomizeValues();
         }
+        this.index = 0;
+        console.log(`this.compressedStimObject: ${this.compressedStimObject}`);
+        console.log(`this.expandedType: ${this.expandedType}`);
+        console.log(`this.expandedValue: ${this.expandedValue}`);
+        console.log(`this.expandedTime: ${this.expandedTime}`);
+
         this.showCurrent();
         this.scheduleNext();
     }
 
-    randomizeValues() {
-        const expandedStimType = []
-        const expandedStimValue = []
-        const expandedStimRatio = []
-        const expandedStimTime = []
-
-        for (let i = 0; i < this.stimObject.stimValue.length; i++){
-            const repeat = this.stimObject.stimRatio[i];
+    expandValues() {
+        for (let i = 0; i < this.compressedStimObject.stimValue.length; i++){
+            const repeat = this.compressedStimObject.stimRatio[i];
             for (let j = 0; j < repeat; j++){
-                expandedStimType.push(this.stimObject.stimType[i]);
-                expandedStimValue.push(this.stimObject.stimValue[i]);
-                expandedStimRatio.push(1);
-                expandedStimTime.push(this.stimObject.stimTime[i]);
+                this.expandedType.push(this.compressedStimObject.stimType[i]);
+                this.expandedValue.push(this.compressedStimObject.stimValue[i]);
+                this.expandedTime.push(this.compressedStimObject.stimTime[i]);
             }
         }
+    }
 
-        let shuffledIndices = this.shuffleIndices(expandedStimValue.length);
-        this.stimObject.stimType = this.applyShuffledIndices(expandedStimType, shuffledIndices);
-        this.stimObject.stimValue = this.applyShuffledIndices(expandedStimValue, shuffledIndices);
-        this.stimObject.stimRatio = this.applyShuffledIndices(expandedStimRatio, shuffledIndices);
-        this.stimObject.stimTime = this.applyShuffledIndices(expandedStimTime, shuffledIndices);
+    randomizeValues() {
+        let shuffledIndices = this.shuffleIndices(this.expandedValue.length);
+        this.expandedType = this.applyShuffledIndices(this.expandedType, shuffledIndices);
+        this.expandedValue = this.applyShuffledIndices(this.expandedValue, shuffledIndices);
+        this.expandedTime = this.applyShuffledIndices(this.expandedTime, shuffledIndices);
     }
 
     shuffleIndices(length) {
@@ -66,13 +77,23 @@ export default class CreateStimDisplay{
     }
 
     scheduleNext() {
-
         this.timeoutID = setTimeout(() => {
             if(!this.running) return;
             this.advance();
             this.scheduleNext();
-        }, this.stimObject.stimTime[this.index]);
+        }, this.expandedTime[this.index]);
+    }
 
+    pause() {
+        if (this.timeoutID) {
+            clearInterval(this.timeoutID);
+            this.timeoutID = null;
+        }
+    }
+
+    resume() {
+        this.showCurrent();
+        this.scheduleNext();
     }
 
     stop() {
@@ -80,12 +101,12 @@ export default class CreateStimDisplay{
             clearInterval(this.timeoutID);
             this.timeoutID = null;
         }
+        this.displayTarget.innerHTML = '';
     }
 
     advance() {
-        
         this.index = this.index + 1;
-        if (this.index === this.stimObject.stimValue.length){
+        if (this.index === this.expandedValue.length){
             this.index = 0;
             this.randomizeValues();
         }
@@ -93,20 +114,19 @@ export default class CreateStimDisplay{
     }
 
     showCurrent() {
-        const type = this.stimObject.stimType[this.index];
-        const value = this.stimObject.stimValue[this.index];
+        const type = this.expandedType[this.index];
+        const value = this.expandedValue[this.index];
 
         this.displayTarget.innerHTML = '';
 
         if(type === 'Word') {
-            this.displayTarget.textContent = this.stimObject.stimValue[this.index];
+            this.displayTarget.textContent = this.expandedValue[this.index];
         }
         else if (type === 'Drawing') {
             const drawing = document.createElement('div');
             drawing.style.width = '100px';
             drawing.style.height = '100px';
             drawing.style.backgroundColor = value.color.toLowerCase();
-            console.log(`color: ${value.color.toLowerCase()}`);
 
             if(value.shape === 'Circle'){
                 drawing.style.borderRadius = '50%';
