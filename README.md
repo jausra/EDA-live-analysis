@@ -24,3 +24,4 @@ Javascript (no frameworks)
 
 -Use setTimeout and make the function call itself to create a loop that accepts variable timing inputs.
 -When initializing a set of variable with a for-loop, closures allow you to remember the order in which the variables were created, so you can access and use their index at a later time, even after the for-loop is done running.
+-Certain properties of the canvas element must be set using HTML tags or JS attributes, such as height and width, since CSS only controls the element itself, not the bitmap.

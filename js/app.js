@@ -1,5 +1,6 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
+//import { drawCountdown } from './stimCountdown.js';
 
 
 //////////////////Stimulation Control//////////////////
@@ -73,7 +74,6 @@ updateOptions(stimValueColorOptions, stimValueColorSelector);
 updateOptions(stimRatioOptions, stimRatioSelector);
 updateOptions(stimTimeOptions, stimTimeSelector);
 
-console.log("Adding event listeners");
 [
     stimTypeSelector, 
     stimValueWordInput, 
@@ -82,7 +82,6 @@ console.log("Adding event listeners");
     stimRatioSelector, 
     stimTimeSelector
 ].forEach(item => {
-    console.log("Element:", item);
     item.addEventListener('change', checkForValidInputs);
     item.addEventListener('input', checkForValidInputs);
 });
@@ -91,17 +90,21 @@ checkForValidInputs();
 
 const stimRandomizerButton = document.getElementById("stimRandomizerButton");
 stimRandomizerButton.addEventListener("click", () => {
-    console.log("Random button clicked");
     if(stimObject.stimOrder === 'random') {
         stimObject.stimOrder = 'ordered';
         stimRandomizerButton.textContent = 'Random: OFF';
-        stimRandomizerButton.style.backgroundColor = '#0277BD'
+        stimRandomizerButton.style.backgroundColor = '#0277BD';
+        document.querySelectorAll('.stimItemOrder').forEach(orderItem => {
+            orderItem.classList.remove('hidden');
+        })
     } else if (stimObject.stimOrder === 'ordered') {
         stimObject.stimOrder = 'random';
         stimRandomizerButton.textContent = 'Random: ON';
-        stimRandomizerButton.style.backgroundColor = '#e1c93f'
+        stimRandomizerButton.style.backgroundColor = '#E1C93F'
+        document.querySelectorAll('.stimItemOrder').forEach(orderItem => {
+            orderItem.classList.add('hidden');
+        })
     }
-    console.log(`stimObject: ${stimObject}`);
 })
 
 function renderStimItemContainer() {
@@ -158,6 +161,34 @@ function renderStimItemContainer() {
             stimItem.appendChild(displayRatio);
         }
 
+        const displayOrder = document.createElement('input');
+        displayOrder.type = 'text';
+        displayOrder.value = `${i + 1}`;
+        displayOrder.classList.add('stimItemOrder');
+        if(stimObject.stimOrder === 'random') {
+            displayOrder.classList.add('hidden');
+        }
+
+        displayOrder.addEventListener("change", () => {
+            const order = parseInt(displayOrder.value);
+            if(!isNaN(order) && order > 0) {
+                Object.entries(stimObject).forEach(([key, value]) => {
+                    if(key !== 'stimOrder') {
+                        if(order > stimObject.stimType.length){
+                            const [item] = stimObject[key].splice(i, 1);
+                            stimObject[key].push(item);
+                        } else {
+                            [stimObject[key][i], stimObject[key][order-1]] = 
+                            [stimObject[key][order-1], stimObject[key][i]];
+                        }
+                    }
+                })
+            }
+            renderStimItemContainer();
+        })
+
+        stimItem.appendChild(displayOrder);
+
         const deleteStimItemButton = document.createElement('button');
         deleteStimItemButton.classList.add('deleteStimButton', 'fa-solid', 'fa-trash');
         deleteStimItemButton.addEventListener("click", () => {
@@ -211,6 +242,9 @@ function toggleStimControlDisable(isDisabled) {
     document.querySelectorAll('.deleteStimButton').forEach(button => {
         button.disabled = isDisabled;
     })
+    document.querySelectorAll('.stimItemOrder').forEach(input => {
+        input.disabled = isDisabled;
+    })
 }
 
 document.getElementById("stimStartStopButton").addEventListener("click", (e) => {
@@ -241,4 +275,5 @@ document.getElementById("stimPauseResumeButton").addEventListener("click", (e) =
 
 //////////////////Stimulation Display//////////////////
 const displayTarget = document.getElementById("stimDisplay");
-let stimDisplay = new CreateStimDisplay(displayTarget, stimObject);
+const countdownTarget = document.getElementById("stimCountdown");
+let stimDisplay = new CreateStimDisplay(displayTarget, countdownTarget, stimObject);

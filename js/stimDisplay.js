@@ -1,17 +1,23 @@
 export default class CreateStimDisplay{
 
-    constructor(displayTarget, compressedStimObject) {
+    constructor(displayTarget, countdownTarget, compressedStimObject) {
         this.displayTarget = displayTarget;
+        this.countdownTarget = countdownTarget;
         this.index = 0;
         this.previousLastValue = -1;
         this.compressedStimObject = compressedStimObject;
         this.running = false;
         this.paused = false;
         this.timeoutID = null;
+        this.animationID = null;
 
         this.expandedType = [];
         this.expandedValue = [];
         this.expandedTime = [];
+
+        this.ogExpandedType = [];
+        this.ogExpandedValue = [];
+        this.ogExpandedTime = [];
     }
 
     start() {
@@ -21,13 +27,12 @@ export default class CreateStimDisplay{
 
         this.expandValues();
         if(this.compressedStimObject.stimOrder === 'random') {
+            this.ogExpandedType = this.expandedType;
+            this.ogExpandedValue = this.expandedValue;
+            this.ogExpandedTime = this.expandedTime;
             this.randomizeValues();
         }
         this.index = 0;
-        console.log(`this.compressedStimObject: ${this.compressedStimObject}`);
-        console.log(`this.expandedType: ${this.expandedType}`);
-        console.log(`this.expandedValue: ${this.expandedValue}`);
-        console.log(`this.expandedTime: ${this.expandedTime}`);
 
         this.showCurrent();
         this.scheduleNext();
@@ -46,9 +51,9 @@ export default class CreateStimDisplay{
 
     randomizeValues() {
         let shuffledIndices = this.shuffleIndices(this.expandedValue.length);
-        this.expandedType = this.applyShuffledIndices(this.expandedType, shuffledIndices);
-        this.expandedValue = this.applyShuffledIndices(this.expandedValue, shuffledIndices);
-        this.expandedTime = this.applyShuffledIndices(this.expandedTime, shuffledIndices);
+        this.expandedType = this.applyShuffledIndices(this.ogExpandedType, shuffledIndices);
+        this.expandedValue = this.applyShuffledIndices(this.ogExpandedValue, shuffledIndices);
+        this.expandedTime = this.applyShuffledIndices(this.ogExpandedTime, shuffledIndices);
     }
 
     shuffleIndices(length) {
@@ -102,13 +107,16 @@ export default class CreateStimDisplay{
             this.timeoutID = null;
         }
         this.displayTarget.innerHTML = '';
+        this.clearCountdown(this.countdownTarget);
     }
 
     advance() {
         this.index = this.index + 1;
         if (this.index === this.expandedValue.length){
             this.index = 0;
-            this.randomizeValues();
+            if(this.compressedStimObject.stimOrder === 'random') {
+                this.randomizeValues();
+            }
         }
         this.showCurrent();
     }
@@ -121,6 +129,12 @@ export default class CreateStimDisplay{
 
         if(type === 'Word') {
             this.displayTarget.textContent = this.expandedValue[this.index];
+            const wordWidth = this.displayTarget.scrollWidth;
+            const containerWidth = this.displayTarget.clientWidth;
+            if (wordWidth > 0.8*containerWidth) {
+                const scale = 0.8*containerWidth / wordWidth;
+                this.displayTarget.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
         }
         else if (type === 'Drawing') {
             const drawing = document.createElement('div');
@@ -136,5 +150,59 @@ export default class CreateStimDisplay{
             }
             this.displayTarget.appendChild(drawing);
         }
+        this.drawCountdown(this.countdownTarget, this.expandedTime[this.index])
+    }
+
+    drawCountdown(canvas, duration) {
+        const self = this;
+        const ctx = canvas.getContext("2d");
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 200;
+        const startAngle = Math.PI / 2;
+    
+        let startTime = null;
+    
+        function drawFrame(timestamp) {
+            
+            if (!startTime) startTime = timestamp;
+            //const elapsed = (timestamp - startTime) / 1000;
+            const elapsed = (timestamp - startTime);
+            const progress = Math.min(elapsed / duration, 1);
+            const endAngle = startAngle + progress * Math.PI * 2;
+    
+            //Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+            //Draw background circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            ctx.strokeStyle = "#ddd";
+            ctx.lineWidth = 15;
+            ctx.stroke();
+    
+            //draw progress arc
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+            ctx.strokeStyle = "#00aaff";
+            ctx.lineWidth = 15;
+            ctx.stroke();
+    
+            if (progress < 1) {
+                self.animationID = requestAnimationFrame(drawFrame);
+            }
+        }
+    
+        self.animationID = requestAnimationFrame(drawFrame);
+    }
+
+    clearCountdown(canvas) {
+        if (this.animationID !== null){
+            cancelAnimationFrame(this.animationID);
+            this.animationID = null;
+        }
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 }

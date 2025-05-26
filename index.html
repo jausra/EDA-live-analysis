@@ -17,6 +17,7 @@
                     <div id="stimControl">
                         <div id="stimPanel">
                             <div id="stimGenAndRand">
+                                <button id="stimRandomizerButton">Random: ON</button>
                                 <div id="stimGenerator">
                                     <select id="stimTypeSelector">
                                         <option value="">--Choose a type--</option>
@@ -36,7 +37,6 @@
                                     </select>
                                     <button id="addStimButton" class="hidden">+</button>
                                 </div>
-                                <button id="stimRandomizerButton">Random: ON</button>
                             </div>
                             <div id="stimItemContainer"></div>
                         </div>
@@ -54,6 +54,7 @@
                 <div id="stimDisplayContainerWrapper">
                     <div id="stimDisplayContainer">
                         <div id="stimDisplay"></div>
+                        <canvas id="stimCountdown" width="500" height="500"></canvas>
                     </div>
                 </div>
             </div>
