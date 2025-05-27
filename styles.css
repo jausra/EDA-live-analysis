@@ -41,7 +41,8 @@ header h1 {
     border-radius: 20px;
     margin: 20px;
     height: 96%;
-    width: 50%;
+    /* width: 50%; */ 
+    width: 45%;
     position: relative;
     display: flex;
     justify-content: center;
@@ -308,4 +309,48 @@ header h1 {
     transform: translate(-50%, -50%);
     height: 500px;
     width: 500px;
+}
+
+#resultContainer {
+    background-color: #558ec0;
+    border-radius: 20px;
+    margin: 20px;
+    height: 96%;
+    /* width: 50%; */
+    width: 45%;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: width 0.5s linear;
+}
+
+#resultContainer.collapsed {
+    width: 30px;
+}
+
+#resultToggleButton {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(0%, -50%);
+    border: none;
+    background-color: white;
+    padding: 6px;
+    z-index: 1;
+}
+
+#result {
+    display: flex;
+    flex-direction: column;
+    align-Items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    transition: opacity 0.3s ease;
+    position: relative;
+}
+
+#resultContainer.collapsed #result{
+    opacity: 0;
 }

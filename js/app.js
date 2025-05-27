@@ -8,15 +8,36 @@ import CreateStimDisplay from './stimDisplay.js';
 const stimControlToggleButton = document.getElementById('stimControlToggleButton');
 const stimControlContainer = document.getElementById('stimControlContainer');
 const stimDisplayContainerWrapper = document.getElementById('stimDisplayContainerWrapper');
+const resultContainer = document.getElementById('resultContainer');
 
 stimControlToggleButton.addEventListener("click", () => {
     const collapsed = stimControlContainer.classList.toggle("collapsed");
+    console.log(`collapsed: ${collapsed}`);
+    if (!resultContainer.classList.contains("collapsed")) {
+        resultContainer.classList.add("collapsed");
+        resultToggleButton.innerHTML = "&#9664;";
+    }
     if (collapsed) {
         stimDisplayContainerWrapper.classList.add("shifted");
         stimControlToggleButton.innerHTML = "&#9654;";
     } else {
         stimDisplayContainerWrapper.classList.remove("shifted");
         stimControlToggleButton.innerHTML = "&#9664;";
+    }
+})
+
+resultToggleButton.addEventListener("click", () => {
+    const collapsed = resultContainer.classList.toggle("collapsed");
+    if (!stimControlContainer.classList.contains("collapsed")) {
+        stimControlContainer.classList.add("collapsed");
+        stimControlToggleButton.innerHTML = "&#9654;";
+    }
+    if (collapsed) {
+        stimDisplayContainerWrapper.classList.add("shifted");
+        resultToggleButton.innerHTML = "&#9664;";
+    } else {
+        stimDisplayContainerWrapper.classList.remove("shifted");
+        resultToggleButton.innerHTML = "&#9654;";
     }
 })
 
@@ -232,6 +253,7 @@ addStimButton.addEventListener("click", () => {
 
 function toggleStimControlDisable(isDisabled) {
     document.getElementById("stimPauseResumeButton").disabled = !isDisabled;
+    document.getElementById("stimRandomizerButton").disabled = isDisabled;
     document.getElementById("stimTypeSelector").disabled = isDisabled;
     document.getElementById("stimValueShapeSelector").disabled = isDisabled;
     document.getElementById("stimValueColorSelector").disabled = isDisabled;
@@ -277,3 +299,31 @@ document.getElementById("stimPauseResumeButton").addEventListener("click", (e) =
 const displayTarget = document.getElementById("stimDisplay");
 const countdownTarget = document.getElementById("stimCountdown");
 let stimDisplay = new CreateStimDisplay(displayTarget, countdownTarget, stimObject);
+
+//////////////////Data Results/////////////////////////
+const incomingVal = document.getElementById("incomingVal");
+
+const connectSerialButton = document.getElementById("connectSerialButton");
+connectSerialButton.addEventListener("click", async () => {
+    const port = await navigator.serial.requestPort();
+    // const { usbProductId, usbVendorId } = port.getInfo();
+    // console.log(`usbProductId: ${usbProductId}`); //32837
+    // console.log(`usbVendorId: ${usbVendorId}`); //10374
+    await port.open({ baudRate: 9600 });
+    const reader = port.readable.getReader();
+    while (true) {
+        const { value, done } = await reader.read(); 
+        if (done) {
+            reader.releaseLock();
+            break;
+        }
+        //incomingVal.textContent = value;
+        console.log(value);
+    }
+})
+
+if ("serial" in navigator) {
+    console.log("Serial is supported");
+} else {
+    throw new Error("Serial is not supported. Please use a browser that supports serial.");
+}
