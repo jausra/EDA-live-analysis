@@ -18,6 +18,8 @@ export default class CreateStimDisplay{
         this.ogExpandedType = [];
         this.ogExpandedValue = [];
         this.ogExpandedTime = [];
+
+        this.stimDisplayListeners = [];
     }
 
     start() {
@@ -135,6 +137,16 @@ export default class CreateStimDisplay{
                 const scale = 0.8*containerWidth / wordWidth;
                 this.displayTarget.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
+
+            const startTime = Date.now();
+            const duration = this.expandedTime[this.index];
+            const stopTime = startTime + duration;
+
+            this.wordDisplayListeners.forEach(cb => cb({
+                stim: this.expandedValue[this.index],
+                startTime,
+                stopTime
+            }));
         }
         else if (type === 'Drawing') {
             const drawing = document.createElement('div');
@@ -204,5 +216,9 @@ export default class CreateStimDisplay{
 
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    onStimDisplay(callback){
+        this.stimDisplayListeners.push(callback);
     }
 }

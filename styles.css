@@ -320,6 +320,7 @@ header h1 {
     width: 45%;
     position: relative;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     transition: width 0.5s linear;
@@ -353,4 +354,10 @@ header h1 {
 
 #resultContainer.collapsed #result{
     opacity: 0;
+}
+
+#serialChartContainer {
+    width: 90%;
+    height: 50%;
+    background-color: white;
 }

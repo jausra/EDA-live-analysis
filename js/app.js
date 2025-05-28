@@ -1,5 +1,7 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
+import { startSerial } from './serialReader.js';
+import { initChart, updateChart, setAutoscroll, annotateChartWithStim } from './serialChart.js';
 //import { drawCountdown } from './stimCountdown.js';
 
 
@@ -301,29 +303,18 @@ const countdownTarget = document.getElementById("stimCountdown");
 let stimDisplay = new CreateStimDisplay(displayTarget, countdownTarget, stimObject);
 
 //////////////////Data Results/////////////////////////
-const incomingVal = document.getElementById("incomingVal");
+document.getElementById("resetZoomButton").addEventListener("click", () => {
+    setAutoscroll(true);
+});
+
+initChart('serialChart');
 
 const connectSerialButton = document.getElementById("connectSerialButton");
-connectSerialButton.addEventListener("click", async () => {
-    const port = await navigator.serial.requestPort();
-    // const { usbProductId, usbVendorId } = port.getInfo();
-    // console.log(`usbProductId: ${usbProductId}`); //32837
-    // console.log(`usbVendorId: ${usbVendorId}`); //10374
-    await port.open({ baudRate: 9600 });
-    const reader = port.readable.getReader();
-    while (true) {
-        const { value, done } = await reader.read(); 
-        if (done) {
-            reader.releaseLock();
-            break;
-        }
-        //incomingVal.textContent = value;
-        console.log(value);
-    }
-})
+connectSerialButton.addEventListener("click", () => {
+    //startSerial(displayValue);
+    startSerial(updateChart);
+});
 
-if ("serial" in navigator) {
-    console.log("Serial is supported");
-} else {
-    throw new Error("Serial is not supported. Please use a browser that supports serial.");
-}
+stimDisplay.onStimDisplay(({ stim, startTime, stopTime }) => {
+    annotateChartWithStim(stim, startTime, stopTime);
+})
