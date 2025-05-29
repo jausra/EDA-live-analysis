@@ -1,3 +1,5 @@
+import { colorMap } from "./utils.js";
+
 export default class CreateStimDisplay{
 
     constructor(displayTarget, countdownTarget, compressedStimObject) {
@@ -20,6 +22,8 @@ export default class CreateStimDisplay{
         this.ogExpandedTime = [];
 
         this.stimDisplayListeners = [];
+
+        this.currentEDAValues = [];
     }
 
     start() {
@@ -127,10 +131,14 @@ export default class CreateStimDisplay{
         const type = this.expandedType[this.index];
         const value = this.expandedValue[this.index];
 
+        const startTime = Date.now();
+        const duration = this.expandedTime[this.index];
+        const stopTime = startTime + duration;
+
         this.displayTarget.innerHTML = '';
 
         if(type === 'Word') {
-            this.displayTarget.textContent = this.expandedValue[this.index];
+            this.displayTarget.textContent = value;
             const wordWidth = this.displayTarget.scrollWidth;
             const containerWidth = this.displayTarget.clientWidth;
             if (wordWidth > 0.8*containerWidth) {
@@ -138,12 +146,9 @@ export default class CreateStimDisplay{
                 this.displayTarget.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
 
-            const startTime = Date.now();
-            const duration = this.expandedTime[this.index];
-            const stopTime = startTime + duration;
-
-            this.wordDisplayListeners.forEach(cb => cb({
-                stim: this.expandedValue[this.index],
+            this.stimDisplayListeners.forEach(cb => cb({
+                stim: value,
+                color: 'random',
                 startTime,
                 stopTime
             }));
@@ -161,6 +166,13 @@ export default class CreateStimDisplay{
                 drawing.style.borderRadius = '0%';
             }
             this.displayTarget.appendChild(drawing);
+
+            this.stimDisplayListeners.forEach(cb => cb({
+                stim: `${value.color}\n${value.shape}`,
+                color: colorMap[value.color],
+                startTime,
+                stopTime
+            }));
         }
         this.drawCountdown(this.countdownTarget, this.expandedTime[this.index])
     }
@@ -178,22 +190,18 @@ export default class CreateStimDisplay{
         function drawFrame(timestamp) {
             
             if (!startTime) startTime = timestamp;
-            //const elapsed = (timestamp - startTime) / 1000;
             const elapsed = (timestamp - startTime);
             const progress = Math.min(elapsed / duration, 1);
             const endAngle = startAngle + progress * Math.PI * 2;
     
-            //Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-            //Draw background circle
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.strokeStyle = "#ddd";
             ctx.lineWidth = 15;
             ctx.stroke();
     
-            //draw progress arc
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
             ctx.strokeStyle = "#00aaff";

@@ -1,6 +1,6 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
-import { startSerial } from './serialReader.js';
+import { startSerial, stopSerial } from './serialReader.js';
 import { initChart, updateChart, setAutoscroll, annotateChartWithStim } from './serialChart.js';
 //import { drawCountdown } from './stimCountdown.js';
 
@@ -14,7 +14,6 @@ const resultContainer = document.getElementById('resultContainer');
 
 stimControlToggleButton.addEventListener("click", () => {
     const collapsed = stimControlContainer.classList.toggle("collapsed");
-    console.log(`collapsed: ${collapsed}`);
     if (!resultContainer.classList.contains("collapsed")) {
         resultContainer.classList.add("collapsed");
         resultToggleButton.innerHTML = "&#9664;";
@@ -271,13 +270,24 @@ function toggleStimControlDisable(isDisabled) {
     })
 }
 
-document.getElementById("stimStartStopButton").addEventListener("click", (e) => {
+document.getElementById("stimStartStopButton").addEventListener("click", async (e) => {
     if (!stimDisplay.running){
-        stimDisplay.start();
-        e.target.textContent = "Stop";
-        stimDisplay.running = true;
-        toggleStimControlDisable(true);
+        try{
+            resetEDAValues();
+            await startSerial(updateInterface);
+            stimDisplay.start();
+            e.target.textContent = "Stop";
+            stimDisplay.running = true;
+            toggleStimControlDisable(true);
+            const collapsed = stimControlContainer.classList.toggle("collapsed");
+            stimDisplayContainerWrapper.classList.add("shifted");
+            stimControlToggleButton.innerHTML = "&#9654;";
+        } 
+        catch {
+            console.error('Serial port did not connect');
+        }
     } else {
+        stopSerial();
         stimDisplay.stop();
         e.target.textContent = "Start";
         stimDisplay.running = false;
@@ -309,12 +319,46 @@ document.getElementById("resetZoomButton").addEventListener("click", () => {
 
 initChart('serialChart');
 
-const connectSerialButton = document.getElementById("connectSerialButton");
-connectSerialButton.addEventListener("click", () => {
-    //startSerial(displayValue);
-    startSerial(updateChart);
-});
+function updateInterface(value) {
+    updateChart(value);
+    updateEDA(value);
+}
 
-stimDisplay.onStimDisplay(({ stim, startTime, stopTime }) => {
-    annotateChartWithStim(stim, startTime, stopTime);
+stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
+    annotateChartWithStim(stim, color, startTime, stopTime);
 })
+
+//////////////////Data Analysis/////////////////////////
+let stimEDAValues = [];
+let oldStimValue = '';
+let edaDeltaTally = [];
+
+function resetEDAValues() {
+    stimEDAValues = [];
+    oldStimValue = '';
+    edaDeltaTally = [];
+}
+
+function updateEDA(value) {
+    stimEDAValues.push(value);
+    let currentStimValue;
+    if (typeof(stimDisplay.expandedValue[stimDisplay.index]) === 'string'){
+        currentStimValue = stimDisplay.expandedValue[stimDisplay.index]
+    } else if (typeof(stimDisplay.expandedValue[stimDisplay.index]) === 'object') {
+        currentStimValue = `${stimDisplay.expandedValue[stimDisplay.index].color} ${stimDisplay.expandedValue[stimDisplay.index].shape}`
+    }
+    
+    if( currentStimValue !== oldStimValue ){
+        let edaMin = Math.min(...stimEDAValues)
+        let edaMax = Math.max(...stimEDAValues)
+        let edaDelta = edaMax - edaMin;
+        if(!edaDeltaTally[currentStimValue]) {
+            edaDeltaTally[currentStimValue] = [];
+        }
+        edaDeltaTally[currentStimValue].push(edaDelta)
+        console.log(edaDeltaTally);
+        stimEDAValues = [];
+        //oldStimValue = stimDisplay.expandedValue[stimDisplay.index];
+        oldStimValue = currentStimValue;
+    }
+}

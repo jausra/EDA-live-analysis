@@ -1,7 +1,8 @@
-//import 'chartjs-adapter-date-fns';
+import { randomColor } from './utils.js';
 let chart;
 let autoscroll = true;
 const AUTOSCROLL_WINDOW = 50;
+const annotationColorDict = {};
 
 export function initChart(canvasId) {
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -67,11 +68,9 @@ export function updateChart(value) {
 
     chart.data.datasets[0].data.push({ x: now, y: value})
 
-    // console.log(`autoscroll: ${autoscroll}`);
-
     if (autoscroll) {
-        //const recentData = chart.data.datasets[0].data.slice(`-${AUTOSCROLL_WINDOW}`);
-        const recentData = chart.data.datasets[0].data.slice(-50);
+        const recentData = chart.data.datasets[0].data.slice(`-${AUTOSCROLL_WINDOW}`);
+        //const recentData = chart.data.datasets[0].data.slice(-50);
         const minX = recentData[0].x;
         const maxX = recentData[recentData.length - 1].x;
 
@@ -80,27 +79,35 @@ export function updateChart(value) {
     }
 
     chart.update('none');
-
-    // if (chart.data.labels.length > 50) {
-    //     chart.data.labels.shift();
-    //     chart.data.datasets[0].data.shift();
-    // }
 }
 
 export function setAutoscroll(value) {
     autoscroll = value;
 }
 
-export function annotateChartWithStim(stim, startTime, stopTime) {
+export function annotateChartWithStim(stim, color='random', startTime, stopTime) {
+    if (!(stim in annotationColorDict)){
+        if (color === 'random'){
+            annotationColorDict[stim] = randomColor();
+        } else {
+            annotationColorDict[stim] = color;
+        }
+    }
     chart.options.plugins.annotation.annotations[`stim-${startTime}`] = {
         type: 'box',
         xMin: startTime,
         xMax: stopTime,
-        backgroundColor: 'rgba(127, 127, 255, 0.2)',
+        backgroundColor: annotationColorDict[stim],
         label: {
-            content: stim,
+            content: stim.split('\n'),
             enabled: true,
-            position: center,
+            position: 'center',
+            textAlign: 'center',
+            font: {
+                size: 24,
+                weight: 'bold',
+            },
+            color: '#000',
         },
     };
     chart.update();
