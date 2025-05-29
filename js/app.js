@@ -1,7 +1,8 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
-import { startSerial, stopSerial } from './serialReader.js';
-import { initChart, updateChart, setAutoscroll, annotateChartWithStim } from './serialChart.js';
+import { requestPort, startSerial, stopSerial, resumeSerial } from './serialReader.js';
+import { initChart, updateChart, setAutoscroll, annotateChartWithStim, clearChart } from './serialChart.js';
+import { resetColorOptions } from './utils.js';
 //import { drawCountdown } from './stimCountdown.js';
 
 
@@ -270,18 +271,43 @@ function toggleStimControlDisable(isDisabled) {
     })
 }
 
+async function showInitialCountdown() {
+    await new Promise((resolve) => {
+        const displayText = document.getElementById("stimDisplay");
+        let currentNumber = 3;
+        displayText.textContent = currentNumber;
+
+        const interval = setInterval(() => {
+            currentNumber--;
+            if (currentNumber > 0){
+                displayText.textContent = currentNumber;
+            } else {
+                clearInterval(interval);
+                displayText.textContent = '';
+                resolve(); 
+            }
+        }, 1000);
+    })
+}
+
 document.getElementById("stimStartStopButton").addEventListener("click", async (e) => {
     if (!stimDisplay.running){
         try{
             resetEDAValues();
-            await startSerial(updateInterface);
-            stimDisplay.start();
+            resetColorOptions();
+            clearChart();
+            await requestPort();
+
             e.target.textContent = "Stop";
             stimDisplay.running = true;
             toggleStimControlDisable(true);
-            const collapsed = stimControlContainer.classList.toggle("collapsed");
+            stimControlContainer.classList.toggle("collapsed");
             stimDisplayContainerWrapper.classList.add("shifted");
             stimControlToggleButton.innerHTML = "&#9654;";
+
+            await showInitialCountdown();
+            await startSerial(updateInterface);
+            stimDisplay.start();
         } 
         catch {
             console.error('Serial port did not connect');
@@ -295,12 +321,28 @@ document.getElementById("stimStartStopButton").addEventListener("click", async (
     }
 })
 
-document.getElementById("stimPauseResumeButton").addEventListener("click", (e) => {
+document.getElementById("stimPauseResumeButton").addEventListener("click", async (e) => {
     if (stimDisplay.paused){
-        stimDisplay.resume();
-        e.target.textContent = "Pause";
-        stimDisplay.paused = false;
+        try{
+            stimEDAValues = [];
+
+            stimControlContainer.classList.toggle("collapsed");
+            stimDisplayContainerWrapper.classList.add("shifted");
+            stimControlToggleButton.innerHTML = "&#9654;";
+
+            await showInitialCountdown();
+
+            //await startSerial(updateInterface);
+            await resumeSerial(updateInterface);
+            stimDisplay.resume();
+            e.target.textContent = "Pause";
+            stimDisplay.paused = false;
+        } 
+        catch {
+            console.error('Serial port did not connect');
+        }
     } else {
+        stopSerial();
         stimDisplay.pause();
         e.target.textContent = "Resume";
         stimDisplay.paused = true;
@@ -331,34 +373,43 @@ stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
 //////////////////Data Analysis/////////////////////////
 let stimEDAValues = [];
 let oldStimValue = '';
-let edaDeltaTally = [];
+let stats = [];
 
 function resetEDAValues() {
     stimEDAValues = [];
     oldStimValue = '';
-    edaDeltaTally = [];
+    stats = [];
 }
 
 function updateEDA(value) {
-    stimEDAValues.push(value);
     let currentStimValue;
     if (typeof(stimDisplay.expandedValue[stimDisplay.index]) === 'string'){
         currentStimValue = stimDisplay.expandedValue[stimDisplay.index]
     } else if (typeof(stimDisplay.expandedValue[stimDisplay.index]) === 'object') {
         currentStimValue = `${stimDisplay.expandedValue[stimDisplay.index].color} ${stimDisplay.expandedValue[stimDisplay.index].shape}`
     }
+
+    if ( oldStimValue === '') {
+        oldStimValue = currentStimValue;
+    }
     
-    if( currentStimValue !== oldStimValue ){
+    if( currentStimValue !== oldStimValue && stimEDAValues.length > 0){
         let edaMin = Math.min(...stimEDAValues)
         let edaMax = Math.max(...stimEDAValues)
         let edaDelta = edaMax - edaMin;
-        if(!edaDeltaTally[currentStimValue]) {
-            edaDeltaTally[currentStimValue] = [];
+        if(!stats[oldStimValue]) {
+            stats[oldStimValue] = { 
+                delta: [], 
+                avgDelta: 0,
+                varDelta: 0
+            };
         }
-        edaDeltaTally[currentStimValue].push(edaDelta)
-        console.log(edaDeltaTally);
+        
+
         stimEDAValues = [];
         //oldStimValue = stimDisplay.expandedValue[stimDisplay.index];
         oldStimValue = currentStimValue;
     }
+
+    stimEDAValues.push(value);
 }

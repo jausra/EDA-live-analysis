@@ -1,4 +1,4 @@
-const colorOptions = [
+const ogColorOptions = [
     "rgba(255, 0, 0, 0.2)",       // red
     "rgba(0, 255, 0, 0.2)",       // green
     "rgba(0, 0, 255, 0.2)",       // blue
@@ -21,9 +21,17 @@ const colorOptions = [
     "rgba(75, 0, 130, 0.2)"       // indigo
 ];
 
+let colorOptions = [...ogColorOptions];
+
 export function randomColor() {
+    if (colorOptions.length === 0) resetColorOptions();
     return colorOptions.splice(Math.floor(colorOptions.length*Math.random()), 1)[0];
 }
+
+export function resetColorOptions() {
+    colorOptions = [...ogColorOptions];
+}
+
 
 export const colorMap = {
     'Red': 'rgba(255, 0, 0, 0.2)',

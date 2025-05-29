@@ -66,7 +66,7 @@ export function initChart(canvasId) {
 export function updateChart(value) {
     const now = Date.now();
 
-    chart.data.datasets[0].data.push({ x: now, y: value})
+    chart.data.datasets[0].data.push({ x: now, y: value});
 
     if (autoscroll) {
         const recentData = chart.data.datasets[0].data.slice(`-${AUTOSCROLL_WINDOW}`);
@@ -110,5 +110,11 @@ export function annotateChartWithStim(stim, color='random', startTime, stopTime)
             color: '#000',
         },
     };
+    chart.update();
+}
+
+export function clearChart() {
+    chart.data.datasets[0].data = [];
+    chart.options.plugins.annotation.annotations = {};
     chart.update();
 }
