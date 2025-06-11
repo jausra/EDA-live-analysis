@@ -7,39 +7,40 @@ export async function requestPort() {
 }
 
 export async function startSerial(onData) {
-    //port = await navigator.serial.requestPort();    
-
-    // const displayText = document.getElementById("stimDisplay");
-    // let currentNumber = 3;
-    // displayText.textContent = currentNumber;
-
-    // await new Promise((resolve) => {
-    //     const interval = setInterval(() => {
-    //         currentNumber--;
-    //         if (currentNumber > 0){
-    //             displayText.textContent = currentNumber;
-    //         } else {
-    //             clearInterval(interval);
-    //             displayText.textContent = '';
-    //             resolve(); 
-    //         }
-    //     }, 1000);
-    // });
-
     await port.open({ baudRate: 9600 });
+
     const textDecoder = new TextDecoderStream();
     readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-    reader = textDecoder.readable.getReader();
-    (async () => { 
+
+    const lineStream = textDecoder.readable
+        .pipeThrough(new TransformStream({
+            transform(chunk, controller) {
+                buffer += chunk;
+                let lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    controller.enqueue(line.trim());
+                }
+            },
+            flush(controller) {
+                if (buffer) {
+                    controller.enqueue(buffer.trim());
+                }
+            }
+        }));
+
+    let buffer = '';
+    reader = lineStream.getReader();
+
+    (async () => {
         while (true) {
-            const { value, done } = await reader.read(); 
+            const { value, done } = await reader.read();
             if (done) {
                 reader.releaseLock();
                 break;
             }
 
-            const text = value.trim();
-            const number = parseInt(text, 10);
+            const number = parseInt(value, 10);
             if (!isNaN(number)) {
                 onData(number);
             }
@@ -68,7 +69,26 @@ export async function resumeSerial(onData) {
         await port.open({ baudRate: 9600 });
         const textDecoder = new TextDecoderStream();
         readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-        reader = textDecoder.readable.getReader();
+        const lineStream = textDecoder.readable
+            .pipeThrough(new TransformStream({
+                transform(chunk, controller) {
+                    buffer += chunk;
+                    let lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) {
+                        controller.enqueue(line.trim());
+                    }
+                },
+                flush(controller) {
+                    if (buffer) {
+                        controller.enqueue(buffer.trim());
+                    }
+                }
+            }));
+
+        let buffer = '';
+        reader = lineStream.getReader();
+        
         (async () => { 
             while (true) {
                 const { value, done } = await reader.read(); 

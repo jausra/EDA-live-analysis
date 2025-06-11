@@ -4,12 +4,11 @@ let autoscroll = true;
 const AUTOSCROLL_WINDOW = 50;
 const annotationColorDict = {};
 
-export function initChart(canvasId) {
+export function initSerialChart(canvasId) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     chart = new Chart(ctx, {
         type: 'line',
         data: {
-            //labels: [],
             datasets: [{
                 label: 'EDA',
                 data: [],
@@ -19,14 +18,7 @@ export function initChart(canvasId) {
         options: {
             plugins: {
                 legend: {
-                    labels: {
-                        boxHeight: 2,
-                        color: '#000',
-                        font: {
-                            weight: 'bold',
-                            size: 16,
-                        }
-                    }
+                    display: false
                 },
                 zoom: {
                     pan: {
@@ -48,22 +40,79 @@ export function initChart(canvasId) {
                             autoscroll = false;
                         },
                     },
-                }, 
+                }
             },
             scales: {
                 x: {
+                    title: {
+                        display: true,
+                        text: 'Time (HH:MM:SS)',
+                        color: '#000',
+                        font: {
+                            weight: 'bold',
+                            size: 16,
+                        },
+                    },
+                    ticks: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold',
+                            size: 14,
+                        },
+                    },
                     type: 'time',
                     time: {
                         unit: 'second',
                     },
+                    grid: {
+                        display: false
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'EDA Value (ADC)',
+                        color: '#000',
+                        font: {
+                            weight: 'bold',
+                            size: 16,
+                        }
+                    },
+                    ticks: {
+                        color: '#000',
+                        font: {
+                            weight: 'bold',
+                            size: 14,
+                        }
+                    },
                 }
             }, 
             maintainAspectRatio: false,
-        }
+        },
+        plugins: [{
+            id: 'hideLabel',
+            afterDraw(chart) {
+                const annotations = chart.options.plugins.annotation?.annotations;
+                if (!annotations) return;
+
+                const xScale = chart.scales.x;
+                const chartLeft = chart.chartArea.left;
+
+                for (const [key, annotation] of Object.entries(annotations)) {
+                    const boxLeft = xScale.getPixelForValue(annotation.xMin);
+
+                    if(boxLeft < chartLeft) {
+                        annotation.label.color = 'rgba(0,0,0,0)';
+                    } else {
+                        annotation.label.color = '#000';
+                    }
+                }
+            }
+        }]
     })
 }
 
-export function updateChart(value) {
+export function updateSerialChart(value) {
     const now = Date.now();
 
     chart.data.datasets[0].data.push({ x: now, y: value});
@@ -85,6 +134,8 @@ export function setAutoscroll(value) {
     autoscroll = value;
 }
 
+let previousStartTime;
+
 export function annotateChartWithStim(stim, color='random', startTime, stopTime) {
     if (!(stim in annotationColorDict)){
         if (color === 'random'){
@@ -94,6 +145,7 @@ export function annotateChartWithStim(stim, color='random', startTime, stopTime)
         }
     }
     chart.options.plugins.annotation.annotations[`stim-${startTime}`] = {
+        //drawTime: 'beforeDraw',
         type: 'box',
         xMin: startTime,
         xMax: stopTime,
@@ -101,19 +153,33 @@ export function annotateChartWithStim(stim, color='random', startTime, stopTime)
         label: {
             content: stim.split('\n'),
             enabled: true,
-            position: 'center',
-            textAlign: 'center',
+            //position: 'center',
+            position: 'start',
+            textAlign: 'left',
             font: {
                 size: 24,
                 weight: 'bold',
             },
             color: '#000',
+            clip: true,
+            //z: 0
         },
     };
+    previousStartTime = startTime;
     chart.update();
 }
 
-export function clearChart() {
+export function annotateChartWithDelta(edaDelta) {
+    if (`stim-${previousStartTime}` in chart.options.plugins.annotation.annotations) {
+        const label = chart.options.plugins.annotation.annotations[`stim-${previousStartTime}`].label;
+
+        label.content = [label.content, edaDelta];
+        
+        chart.update();
+    }
+}
+
+export function clearSerialChart() {
     chart.data.datasets[0].data = [];
     chart.options.plugins.annotation.annotations = {};
     chart.update();

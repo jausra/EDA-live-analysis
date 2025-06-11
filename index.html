@@ -9,6 +9,8 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/hammer.js/2.0.8/hammer.min.js" integrity="sha512-UXumZrZNiOwnTcZSHLOfcTs0aos2MzBWHXOHOuB0J/R44QB0dwY5JgfbvljXcklVf65Gc4El6RjZ+lnwd2az2g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-zoom/2.2.0/chartjs-plugin-zoom.min.js" integrity="sha512-FRGbE3pigbYamZnw4+uT4t63+QJOfg4MXSgzPn2t8AWg9ofmFvZ/0Z37ZpCawjfXLBSVX2p2CncsmUH2hzsgJg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0/dist/chartjs-plugin-annotation.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+        <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
     </head>
     <body>
         <header>
@@ -21,9 +23,12 @@
                 <div id="stimControlContainer">
                     <div id="stimControl">
                         <div id="stimPanel">
-                            <div id="stimGenAndRand">
+                            <div id="gameContainer">
+                                <div id="customGameButton"> Custom Game</div>
+                            </div>
+                            <div id="stimGenAndRand" class="hiddenFlex">
                                 <button id="stimRandomizerButton">Random: ON</button>
-                                <div id="stimGenerator">
+                                <div id="stimGenerator" class="hidden">
                                     <select id="stimTypeSelector">
                                         <option value="">--Choose a type--</option>
                                     </select>
@@ -65,9 +70,12 @@
                 <div id="resultContainer" class="collapsed">
                     <div id="result">
                         <div id="serialChartContainer">
-                            <canvas id="serialChart"></canvas>
+                            <canvas id="serialChart" width="500px"></canvas>
                         </div>
                         <button id="resetZoomButton">Reset Zoom</button>
+                        <div id="sigChartContainer">
+                            <canvas id="sigChart"></canvas>
+                        </div>
                     </div>
                     <button id="resultToggleButton">&#9664;</button>
                 </div>

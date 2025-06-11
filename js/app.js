@@ -1,18 +1,20 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
 import { requestPort, startSerial, stopSerial, resumeSerial } from './serialReader.js';
-import { initChart, updateChart, setAutoscroll, annotateChartWithStim, clearChart } from './serialChart.js';
+import { initSerialChart, updateSerialChart, setAutoscroll, annotateChartWithStim, annotateChartWithDelta, clearSerialChart } from './serialChart.js';
 import { resetColorOptions } from './utils.js';
-//import { drawCountdown } from './stimCountdown.js';
+import { analyze } from './stats.js';
+import { initSigChart, updateSigChart } from './significanceChart.js';
 
 
-//////////////////Stimulation Control//////////////////
+//////////////////Modal Controls//////////////////
 
 const stimControlToggleButton = document.getElementById('stimControlToggleButton');
 const stimControlContainer = document.getElementById('stimControlContainer');
 const stimDisplayContainerWrapper = document.getElementById('stimDisplayContainerWrapper');
 const resultContainer = document.getElementById('resultContainer');
 
+//Toggle the left modal
 stimControlToggleButton.addEventListener("click", () => {
     const collapsed = stimControlContainer.classList.toggle("collapsed");
     if (!resultContainer.classList.contains("collapsed")) {
@@ -28,6 +30,7 @@ stimControlToggleButton.addEventListener("click", () => {
     }
 })
 
+//Toggle the right modal
 resultToggleButton.addEventListener("click", () => {
     const collapsed = resultContainer.classList.toggle("collapsed");
     if (!stimControlContainer.classList.contains("collapsed")) {
@@ -43,8 +46,12 @@ resultToggleButton.addEventListener("click", () => {
     }
 })
 
+//////////////////Custom Stimulation Control//////////////////
+
+//Create a stim object with a random order
 const stimObject = new CreateStimObject('random');
 
+//Get the dropdowns/text inputs for the custom stim sequence
 const stimTypeSelector = document.getElementById('stimTypeSelector');
 const stimValueWordInput = document.getElementById('stimValueWordInput');
 const stimValueShapeSelector = document.getElementById('stimValueShapeSelector');
@@ -53,6 +60,39 @@ const stimRatioSelector = document.getElementById('stimRatioSelector');
 const stimTimeSelector = document.getElementById('stimTimeSelector');
 const addStimButton = document.getElementById('addStimButton');
 
+//Set the default values for the dropdowns/text inputs 
+const stimTypeOptions = ['Word', 'Drawing'];
+const stimValueShapeOptions = ['Circle', 'Square'];
+const stimValueColorOptions = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'White', 'Black'];
+const stimRatioOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const stimTimeOptions = ['1 s', '2 s', '3 s', '4 s', '5 s', '6 s', '7 s', '8 s', '9 s', '10 s'];
+function updateOptions(stimOptions, selector){
+    stimOptions.forEach(optionText => {
+        const option = document.createElement('option');
+        option.value = optionText;
+        option.textContent = optionText;
+        selector.appendChild(option);
+    })
+}
+updateOptions(stimTypeOptions, stimTypeSelector);
+updateOptions(stimValueShapeOptions, stimValueShapeSelector);
+updateOptions(stimValueColorOptions, stimValueColorSelector);
+updateOptions(stimRatioOptions, stimRatioSelector);
+updateOptions(stimTimeOptions, stimTimeSelector);
+
+
+//Check if all dropdowns/text inputs are entered after updating one of them
+[
+    stimTypeSelector, 
+    stimValueWordInput, 
+    stimValueShapeSelector, 
+    stimValueColorSelector, 
+    stimRatioSelector, 
+    stimTimeSelector
+].forEach(item => {
+    item.addEventListener('change', checkForValidInputs);
+    item.addEventListener('input', checkForValidInputs);
+});
 function checkForValidInputs() {
     const stimType = stimTypeSelector.value;
 
@@ -75,42 +115,10 @@ function checkForValidInputs() {
     addStimButton.classList.add('addStimButton');
     addStimButton.classList.toggle('hidden', !allValid);
 }
-
-const stimTypeOptions = ['Word', 'Drawing'];
-const stimValueShapeOptions = ['Circle', 'Square'];
-const stimValueColorOptions = ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'White', 'Black'];
-const stimRatioOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const stimTimeOptions = ['1 s', '2 s', '3 s', '4 s', '5 s', '6 s', '7 s', '8 s', '9 s', '10 s'];
-
-function updateOptions(stimOptions, selector){
-    stimOptions.forEach(optionText => {
-        const option = document.createElement('option');
-        option.value = optionText;
-        option.textContent = optionText;
-        selector.appendChild(option);
-    })
-}
-
-updateOptions(stimTypeOptions, stimTypeSelector);
-updateOptions(stimValueShapeOptions, stimValueShapeSelector);
-updateOptions(stimValueColorOptions, stimValueColorSelector);
-updateOptions(stimRatioOptions, stimRatioSelector);
-updateOptions(stimTimeOptions, stimTimeSelector);
-
-[
-    stimTypeSelector, 
-    stimValueWordInput, 
-    stimValueShapeSelector, 
-    stimValueColorSelector, 
-    stimRatioSelector, 
-    stimTimeSelector
-].forEach(item => {
-    item.addEventListener('change', checkForValidInputs);
-    item.addEventListener('input', checkForValidInputs);
-});
-
 checkForValidInputs();
 
+
+//Toggle the randomness of the stim order
 const stimRandomizerButton = document.getElementById("stimRandomizerButton");
 stimRandomizerButton.addEventListener("click", () => {
     if(stimObject.stimOrder === 'random') {
@@ -130,6 +138,7 @@ stimRandomizerButton.addEventListener("click", () => {
     }
 })
 
+//For each item in the stim object, render a square representing its properties
 function renderStimItemContainer() {
     const stimItemContainer = document.getElementById('stimItemContainer');
     stimItemContainer.innerHTML = '';
@@ -236,6 +245,7 @@ function renderStimItemContainer() {
     }
 }
 
+//Push a new item to the stim object based on the current dropdowns/text input
 addStimButton.addEventListener("click", () => {
     stimObject.stimType.push(stimTypeSelector.value);
     if (stimTypeSelector.value == 'Word'){
@@ -252,6 +262,7 @@ addStimButton.addEventListener("click", () => {
     document.getElementById('stimStartStopButton').disabled = false;
     renderStimItemContainer();
 });
+
 
 function toggleStimControlDisable(isDisabled) {
     document.getElementById("stimPauseResumeButton").disabled = !isDisabled;
@@ -271,6 +282,90 @@ function toggleStimControlDisable(isDisabled) {
     })
 }
 
+
+//////////////////General Stimulation Control//////////////////
+const customGameButton = document.getElementById("customGameButton");
+const stimGenAndRand = document.getElementById("stimGenAndRand");
+customGameButton.addEventListener("click", () => {
+    console.log("customGameButton clicked");
+    customGameButton.classList.toggle("hiddenFlex");
+    stimGenAndRand.classList.toggle("hiddenFlex");
+})
+
+
+
+//Start/stop running the application
+document.getElementById("stimStartStopButton").addEventListener("click", async (e) => {
+    if (!stimDisplay.running){
+        try{
+            resetEDAValues();
+            resetColorOptions();
+            clearSerialChart();
+            updateSigChart(data);
+            await requestPort();
+
+            e.target.textContent = "Stop";
+            stimDisplay.running = true;
+            toggleStimControlDisable(true);
+            stimControlContainer.classList.toggle("collapsed");
+            stimDisplayContainerWrapper.classList.add("shifted");
+            stimControlToggleButton.innerHTML = "&#9654;";
+
+            await showInitialCountdown();
+            await startSerial(updateInterface);
+            stimDisplay.start();
+            
+        } 
+        catch {
+            console.error('Serial port did not connect');
+        }
+    } else {
+        stopSerial();
+        stimDisplay.stop();
+        e.target.textContent = "Start";
+        stimDisplay.running = false;
+        toggleStimControlDisable(false);
+        firstStimFlag = true;
+        stimEDAValues = [];
+    }
+})
+
+//Toggle pause/resume button
+function togglePauseDisable(isEnabled) {
+    document.getElementById("stimPauseResumeButton").disabled = !isEnabled;
+}
+
+//Pause/resume the running application
+document.getElementById("stimPauseResumeButton").addEventListener("click", async (e) => {
+    if (stimDisplay.paused){
+        try{
+            stimEDAValues = [];
+
+            stimControlContainer.classList.toggle("collapsed");
+            stimDisplayContainerWrapper.classList.add("shifted");
+            stimControlToggleButton.innerHTML = "&#9654;";
+
+            await showInitialCountdown();
+
+            await resumeSerial(updateInterface);
+            stimDisplay.resume();
+            e.target.textContent = "Pause";
+            stimDisplay.paused = false;
+        } 
+        catch {
+            console.error('Serial port did not connect');
+        }
+    } else {
+        stopSerial();
+        stimDisplay.pause();
+        e.target.textContent = "Resume";
+        stimDisplay.paused = true;
+        firstStimFlag = true;
+        stimEDAValues = [];
+    }
+})
+
+//Show the initial 3 2 1 countdown
 async function showInitialCountdown() {
     await new Promise((resolve) => {
         const displayText = document.getElementById("stimDisplay");
@@ -290,65 +385,6 @@ async function showInitialCountdown() {
     })
 }
 
-document.getElementById("stimStartStopButton").addEventListener("click", async (e) => {
-    if (!stimDisplay.running){
-        try{
-            resetEDAValues();
-            resetColorOptions();
-            clearChart();
-            await requestPort();
-
-            e.target.textContent = "Stop";
-            stimDisplay.running = true;
-            toggleStimControlDisable(true);
-            stimControlContainer.classList.toggle("collapsed");
-            stimDisplayContainerWrapper.classList.add("shifted");
-            stimControlToggleButton.innerHTML = "&#9654;";
-
-            await showInitialCountdown();
-            await startSerial(updateInterface);
-            stimDisplay.start();
-        } 
-        catch {
-            console.error('Serial port did not connect');
-        }
-    } else {
-        stopSerial();
-        stimDisplay.stop();
-        e.target.textContent = "Start";
-        stimDisplay.running = false;
-        toggleStimControlDisable(false);
-    }
-})
-
-document.getElementById("stimPauseResumeButton").addEventListener("click", async (e) => {
-    if (stimDisplay.paused){
-        try{
-            stimEDAValues = [];
-
-            stimControlContainer.classList.toggle("collapsed");
-            stimDisplayContainerWrapper.classList.add("shifted");
-            stimControlToggleButton.innerHTML = "&#9654;";
-
-            await showInitialCountdown();
-
-            //await startSerial(updateInterface);
-            await resumeSerial(updateInterface);
-            stimDisplay.resume();
-            e.target.textContent = "Pause";
-            stimDisplay.paused = false;
-        } 
-        catch {
-            console.error('Serial port did not connect');
-        }
-    } else {
-        stopSerial();
-        stimDisplay.pause();
-        e.target.textContent = "Resume";
-        stimDisplay.paused = true;
-    }
-})
-
 //////////////////Stimulation Display//////////////////
 const displayTarget = document.getElementById("stimDisplay");
 const countdownTarget = document.getElementById("stimCountdown");
@@ -359,57 +395,86 @@ document.getElementById("resetZoomButton").addEventListener("click", () => {
     setAutoscroll(true);
 });
 
-initChart('serialChart');
+initSerialChart('serialChart');
 
 function updateInterface(value) {
-    updateChart(value);
+    updateSerialChart(value);
     updateEDA(value);
 }
 
+let firstStimFlag = true;
 stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
+    if (!firstStimFlag) {
+        let edaDeltaDisplay = analyzeEDA();
+        annotateChartWithDelta(edaDeltaDisplay);
+    } else  {
+        getCurrentStim();
+        oldStimValue = currentStimValue;
+        firstStimFlag = false;
+    }
     annotateChartWithStim(stim, color, startTime, stopTime);
 })
 
 //////////////////Data Analysis/////////////////////////
+initSigChart('sigChart');
+
 let stimEDAValues = [];
 let oldStimValue = '';
-let stats = [];
+let data = [];
 
 function resetEDAValues() {
     stimEDAValues = [];
     oldStimValue = '';
-    stats = [];
+    data = [];
 }
 
 function updateEDA(value) {
-    let currentStimValue;
+    stimEDAValues.push(value);
+}
+
+let currentStimValue;
+function getCurrentStim() {
     if (typeof(stimDisplay.expandedValue[stimDisplay.index]) === 'string'){
         currentStimValue = stimDisplay.expandedValue[stimDisplay.index]
     } else if (typeof(stimDisplay.expandedValue[stimDisplay.index]) === 'object') {
         currentStimValue = `${stimDisplay.expandedValue[stimDisplay.index].color} ${stimDisplay.expandedValue[stimDisplay.index].shape}`
     }
+}
 
-    if ( oldStimValue === '') {
-        oldStimValue = currentStimValue;
+function findMaxDelta(data) {
+    if (data.length < 2) return 0;
+
+    let currentMax = data[0];
+    let maxDelta = 0;
+
+    for (let i = 1; i < data.length; i++) {
+        const delta = currentMax - data[i];
+        if (delta > maxDelta) {
+            maxDelta = delta;
+        };
+        if (data[i] > currentMax) {
+            currentMax = data[i];
+        };
     }
+
+    return maxDelta;
+}
+
+function analyzeEDA() {
+    getCurrentStim();
+    let edaDelta = findMaxDelta(stimEDAValues);
+    if(!data[oldStimValue]) {
+        data[oldStimValue] = { 
+            datapoints: []
+        };
+    }
+    data[oldStimValue].datapoints.push(edaDelta);
+    data = analyze(data);
+    console.log(`EDA value length: ${stimEDAValues.length}`);
+    console.log(data);
+    updateSigChart(data);
     
-    if( currentStimValue !== oldStimValue && stimEDAValues.length > 0){
-        let edaMin = Math.min(...stimEDAValues)
-        let edaMax = Math.max(...stimEDAValues)
-        let edaDelta = edaMax - edaMin;
-        if(!stats[oldStimValue]) {
-            stats[oldStimValue] = { 
-                delta: [], 
-                avgDelta: 0,
-                varDelta: 0
-            };
-        }
-        
-
-        stimEDAValues = [];
-        //oldStimValue = stimDisplay.expandedValue[stimDisplay.index];
-        oldStimValue = currentStimValue;
-    }
-
-    stimEDAValues.push(value);
+    stimEDAValues = [];
+    oldStimValue = currentStimValue;
+    return edaDelta;
 }
