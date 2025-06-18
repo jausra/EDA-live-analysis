@@ -80,25 +80,59 @@ header h1 {
 
 #gameContainer {
     display: flex;
+    flex-direction: column;
     width: 100%;
-    justify-content: center;
+    align-items: center;
     font-size: 36px;
     font-weight: 900;
 }
 
-#customGameButton {
+.gameButton {
     display: flex;
-    width: 95%;
+    width: 90%;
     height: 120px;
-    margin: 20px 0 15px 0;
+    margin-top: 20px;
     background-color: lightblue;
     border-radius: 20px;
     justify-content: center;
     align-items: center;
 }
 
-#customGameButton:hover {
+.gameButton:hover {
     cursor: pointer;
+}
+
+#gameTitleContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    align-items: center;
+}
+
+#backButton {
+    background-color: white;
+    /* align-self: flex-start; */
+    margin-left: 2.5%;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 7px 15px;
+    border-radius: 10px;
+}
+
+#backButton:hover {
+    cursor: pointer;
+}
+
+#gameTitleSpacer {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+#gameTitle {
+    text-align: center;
+    font-size: 36px;
+    font-weight: 900;
 }
 
 #stimGenAndRand {
@@ -112,7 +146,6 @@ header h1 {
     /* display: flex none; */
     display: none !important;
 }
-
 
 #stimGenerator {
     /* width: 90%;
@@ -328,6 +361,7 @@ header h1 {
     display: flex;
     align-Items: center;
     justify-content: center;
+    text-align: center;
     height: 150px;
     width: 380px;
     font-size: 70px;

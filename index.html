@@ -24,7 +24,15 @@
                     <div id="stimControl">
                         <div id="stimPanel">
                             <div id="gameContainer">
-                                <div id="customGameButton"> Custom Game</div>
+                                <div id="breathingGameButton" class="gameButton"> Breathing Game</div>
+                                <div id="redDotGameButton" class="gameButton"> Red Dot Game</div>
+                                <div id="customGameButton" class="gameButton"> Custom Game</div>
+                            </div>
+                            <div id="gameTitleContainer" class="hiddenFlex">
+                                <div id="backButton">Back</div>
+                                <div id="gameTitleSpacer">
+                                    <div id="gameTitle"></div>
+                                </div>
                             </div>
                             <div id="stimGenAndRand" class="hiddenFlex">
                                 <button id="stimRandomizerButton">Random: ON</button>
@@ -51,10 +59,10 @@
                             <div id="stimItemContainer"></div>
                         </div>
                         <div id="displayControlButtons">
-                            <button id="stimStartStopButton" disabled>
+                            <button id="stimStartStopButton" class="hiddenFlex" disabled>
                                 Start
                             </button>
-                            <button id="stimPauseResumeButton" disabled>
+                            <button id="stimPauseResumeButton" class="hiddenFlex" disabled>
                                 Pause
                             </button>
                         </div>

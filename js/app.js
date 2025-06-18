@@ -80,6 +80,7 @@ updateOptions(stimValueColorOptions, stimValueColorSelector);
 updateOptions(stimRatioOptions, stimRatioSelector);
 updateOptions(stimTimeOptions, stimTimeSelector);
 
+const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
 
 //Check if all dropdowns/text inputs are entered after updating one of them
 [
@@ -127,24 +128,27 @@ stimRandomizerButton.addEventListener("click", () => {
         stimRandomizerButton.style.backgroundColor = '#0277BD';
         document.querySelectorAll('.stimItemOrder').forEach(orderItem => {
             orderItem.classList.remove('hidden');
-        })
+        });
     } else if (stimObject.stimOrder === 'ordered') {
         stimObject.stimOrder = 'random';
         stimRandomizerButton.textContent = 'Random: ON';
         stimRandomizerButton.style.backgroundColor = '#E1C93F'
         document.querySelectorAll('.stimItemOrder').forEach(orderItem => {
             orderItem.classList.add('hidden');
-        })
+        });
     }
-})
+});
+
+const stimItemContainer = document.getElementById('stimItemContainer');
 
 //For each item in the stim object, render a square representing its properties
 function renderStimItemContainer() {
-    const stimItemContainer = document.getElementById('stimItemContainer');
+    
     stimItemContainer.innerHTML = '';
 
     for (let i = 0; i < stimObject.stimType.length; i++){
         let stimItem = document.createElement('div');
+        stimItem.style.textAlign = 'center';
         stimItem.classList.add('stimItem');
         stimItem.dataset.index = i;
 
@@ -230,19 +234,29 @@ function renderStimItemContainer() {
             stimObject.stimRatio.splice(index, 1);
             stimObject.stimTime.splice(index, 1);
 
+            //If all stim items have been cleared, disable the start button
             if (
                 stimObject.stimType.length === 0 &&
                 stimObject.stimValue.length === 0 &&
                 stimObject.stimRatio.length === 0 &&
                 stimObject.stimTime.length === 0
             ) {
-                document.getElementById('stimStartStopButton').disabled = true;
+                stimStartStopButton.disabled = true;
             }
 
             renderStimItemContainer();
         })
         stimItem.appendChild(deleteStimItemButton);
     }
+}
+
+function clearStimItems() {
+    stimItemContainer.innerHTML = '';
+    stimObject.stimOrder = '';
+    stimObject.stimType = [];
+    stimObject.stimValue = [];
+    stimObject.stimRatio = [];
+    stimObject.stimTime = [];
 }
 
 //Push a new item to the stim object based on the current dropdowns/text input
@@ -259,13 +273,13 @@ addStimButton.addEventListener("click", () => {
     stimObject.stimRatio.push(stimRatioSelector.value);
     stimObject.stimTime.push(1000 * parseFloat(stimTimeSelector.value));
 
-    document.getElementById('stimStartStopButton').disabled = false;
+    stimStartStopButton.disabled = false;
     renderStimItemContainer();
 });
 
 
 function toggleStimControlDisable(isDisabled) {
-    document.getElementById("stimPauseResumeButton").disabled = !isDisabled;
+    stimPauseResumeButton.disabled = !isDisabled;
     document.getElementById("stimRandomizerButton").disabled = isDisabled;
     document.getElementById("stimTypeSelector").disabled = isDisabled;
     document.getElementById("stimValueShapeSelector").disabled = isDisabled;
@@ -284,18 +298,102 @@ function toggleStimControlDisable(isDisabled) {
 
 
 //////////////////General Stimulation Control//////////////////
+const stimStartStopButton = document.getElementById("stimStartStopButton");
+const gameTitleContainer = document.getElementById("gameTitleContainer");
+const backButton = document.getElementById("backButton");
+const gameButtons = document.querySelectorAll(".gameButton");
+const gameTitle = document.getElementById("gameTitle");
+function toggleHideGameButtons() {
+    gameButtons.forEach(gameButton => {
+        gameButton.classList.toggle("hiddenFlex");
+    });
+}
+
+const breathingGameButton = document.getElementById("breathingGameButton");
+breathingGameButton.addEventListener("click", () => {
+    toggleHideGameButtons()
+    gameTitleContainer.classList.toggle("hiddenFlex");
+    stimPauseResumeButton.classList.toggle("hiddenFlex");
+    stimStartStopButton.classList.toggle("hiddenFlex");
+    gameTitle.textContent = "Breathing Game";
+    addBreathingGameStim();
+})
+
+const redDotGameButton = document.getElementById("redDotGameButton");
+redDotGameButton.addEventListener("click", () => {
+    toggleHideGameButtons()
+    gameTitleContainer.classList.toggle("hiddenFlex");
+    stimPauseResumeButton.classList.toggle("hiddenFlex");
+    stimStartStopButton.classList.toggle("hiddenFlex");
+    gameTitle.textContent = "Red Dot Game";
+    addRedDotGameStim();
+})
+
 const customGameButton = document.getElementById("customGameButton");
 const stimGenAndRand = document.getElementById("stimGenAndRand");
 customGameButton.addEventListener("click", () => {
-    console.log("customGameButton clicked");
-    customGameButton.classList.toggle("hiddenFlex");
-    stimGenAndRand.classList.toggle("hiddenFlex");
+    toggleHideGameButtons()
+    stimGenAndRand.classList.toggle("hiddenFlex", false);
+    gameTitleContainer.classList.toggle("hiddenFlex");
+    stimPauseResumeButton.classList.toggle("hiddenFlex");
+    stimStartStopButton.classList.toggle("hiddenFlex");
+    gameTitle.textContent = "Custom Game";
 })
 
+backButton.addEventListener("click", () => {
+    toggleHideGameButtons()
+    stimGenAndRand.classList.toggle("hiddenFlex", true);
+    gameTitleContainer.classList.toggle("hiddenFlex");
+    stimPauseResumeButton.classList.toggle("hiddenFlex");
+    stimStartStopButton.classList.toggle("hiddenFlex");
+    gameTitle.textContent = "";
+    clearStimItems();
+})
 
+//Add items to the stim object for the breathing game
+function addBreathingGameStim() {
+    stimObject.stimOrder = 'ordered';
+    
+    stimObject.stimType.push('Word');
+    stimObject.stimValue.push('Breathe In')
+    stimObject.stimRatio.push('1');
+    stimObject.stimTime.push(10000);
+
+    stimObject.stimType.push('Word');
+    stimObject.stimValue.push('Breathe Out')
+    stimObject.stimRatio.push('1');
+    stimObject.stimTime.push(10000);
+
+    stimStartStopButton.disabled = false;
+    renderStimItemContainer();
+}
+
+//Add items to the stim objects for the red dot game
+function addRedDotGameStim() {
+    stimObject.stimOrder = 'random';
+    
+    stimObject.stimType.push('Drawing');
+    stimObject.stimValue.push({
+        shape: 'Circle',
+        color: 'Red'
+    });
+    stimObject.stimRatio.push('1');
+    stimObject.stimTime.push(9000);
+
+    stimObject.stimType.push('Drawing');
+    stimObject.stimValue.push({
+        shape: 'Circle',
+        color: 'White'
+    });
+    stimObject.stimRatio.push('4');
+    stimObject.stimTime.push(9000);
+
+    stimStartStopButton.disabled = false;
+    renderStimItemContainer();
+}
 
 //Start/stop running the application
-document.getElementById("stimStartStopButton").addEventListener("click", async (e) => {
+stimStartStopButton.addEventListener("click", async (e) => {
     if (!stimDisplay.running){
         try{
             resetEDAValues();
@@ -330,13 +428,8 @@ document.getElementById("stimStartStopButton").addEventListener("click", async (
     }
 })
 
-//Toggle pause/resume button
-function togglePauseDisable(isEnabled) {
-    document.getElementById("stimPauseResumeButton").disabled = !isEnabled;
-}
-
 //Pause/resume the running application
-document.getElementById("stimPauseResumeButton").addEventListener("click", async (e) => {
+stimPauseResumeButton.addEventListener("click", async (e) => {
     if (stimDisplay.paused){
         try{
             stimEDAValues = [];
