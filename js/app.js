@@ -257,6 +257,11 @@ function clearStimItems() {
     stimObject.stimValue = [];
     stimObject.stimRatio = [];
     stimObject.stimTime = [];
+    stimTypeSelector.value = "";
+    stimRatioSelector.value = "";
+    stimTimeSelector.value = "";
+    stimValueWordInput.value = "";
+    checkForValidInputs();
 }
 
 //Push a new item to the stim object based on the current dropdowns/text input
