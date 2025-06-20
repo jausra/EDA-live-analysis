@@ -9,11 +9,13 @@ export function initSerialChart(canvasId) {
     chart = new Chart(ctx, {
         type: 'line',
         data: {
-            datasets: [{
-                label: 'EDA',
-                data: [],
-                pointRadius: 0,
-            }]
+            datasets: [
+            //     {
+            //     label: 'EDA',
+            //     data: [],
+            //     pointRadius: 0,
+            // }
+        ]
         },
         options: {
             plugins: {
@@ -112,16 +114,31 @@ export function initSerialChart(canvasId) {
     })
 }
 
-export function updateSerialChart(value) {
+// export function updateSerialChart(value) {
+export function updateSerialChart(value, id) {
     const now = Date.now();
 
-    chart.data.datasets[0].data.push({ x: now, y: value});
+    let dataset = chart.data.datasets.find(ds => ds.label === id);
+
+    if (!dataset) {
+        dataset = {
+            label: id,
+            data: [],
+            pointRadius:0,
+        };
+        chart.data.datasets.push(dataset);
+    }
+
+    // chart.data.datasets[0].data.push({ x: now, y: value});
+
+    dataset.data.push({ x: now, y: value })
 
     if (autoscroll) {
-        const recentData = chart.data.datasets[0].data.slice(`-${AUTOSCROLL_WINDOW}`);
-        //const recentData = chart.data.datasets[0].data.slice(-50);
-        const minX = recentData[0].x;
-        const maxX = recentData[recentData.length - 1].x;
+        // const recentData = chart.data.datasets[0].data.slice(`-${AUTOSCROLL_WINDOW}`);
+        // const minX = recentData[0].x;
+        // const maxX = recentData[recentData.length - 1].x;
+        const maxX = Date.now();
+        const minX = maxX - 5000;
 
         chart.options.scales.x.min = minX;
         chart.options.scales.x.max = maxX;

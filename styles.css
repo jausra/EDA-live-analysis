@@ -95,7 +95,16 @@ header h1 {
 }
 
 .connBox:hover { 
+    background-color: lightblue;
     cursor: pointer;
+}
+
+.connected { 
+    background-color: green;
+}
+
+.connected:hover { 
+    background-color: red;
 }
 
 #gameContainer {

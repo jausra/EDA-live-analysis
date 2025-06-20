@@ -1,6 +1,6 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
-import { requestPort, startSerial, stopSerial, resumeSerial } from './serialReader.js';
+import { connectPort, disconnectPort, startSerial, stopSerial, resumeSerial } from './serialReader.js'; 
 import { initSerialChart, updateSerialChart, setAutoscroll, annotateChartWithStim, annotateChartWithDelta, clearSerialChart } from './serialChart.js';
 import { resetColorOptions } from './utils.js';
 import { analyze } from './stats.js';
@@ -168,6 +168,14 @@ function renderStimItemContainer() {
                 const scale = (0.9*stimItemWidth)/wordWidth;
                 word.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
+            //If the word is too long, shrink it
+            const stimItemHeight = stimItem.clientHeight;
+            const wordHeight = word.scrollHeight;
+            if (wordHeight > (0.6*stimItemHeight)) {
+                const scale = (0.6*stimItemHeight)/wordHeight;
+                word.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+
         } else if (stimObject.stimType[i] === 'Drawing'){
             const drawing = document.createElement('div');
             drawing.style.width = '100px';
@@ -295,23 +303,85 @@ function toggleStimControlDisable(isDisabled) {
     document.getElementById("addStimButton").disabled = isDisabled;
     document.querySelectorAll('.deleteStimButton').forEach(button => {
         button.disabled = isDisabled;
-    })
+    });
     document.querySelectorAll('.stimItemOrder').forEach(input => {
         input.disabled = isDisabled;
-    })
+    });
 }
 
-
 //////////////////General Stimulation Control//////////////////
+const connBox1 = document.getElementById("connBox1");
+connBox1.addEventListener("click", async (e) => {
+    if (e.target.classList.contains('connected')) {
+        disconnectPort('sensor1');
+        e.target.innerHTML = "+";
+        e.target.classList.remove('connected');
+    } else {
+        try{
+            const port = await connectPort('sensor1');
+            if (port) {
+                e.target.innerHTML = "&#8644;";
+                e.target.classList.add('connected');
+            }
+        } catch {
+            console.log("Serial port did not connect");
+        }
+    }
+    
+});
+connBox1.addEventListener("mouseenter", (e) => {
+    if (e.target.classList.contains("connected")) {
+        e.target.innerHTML = '&#10005';
+    }
+});
+connBox1.addEventListener("mouseleave", (e) => {
+    if (e.target.classList.contains("connected")) {
+        e.target.innerHTML = "&#8644;";
+    }
+});
+
+const connBox2 = document.getElementById("connBox2");
+connBox2.addEventListener("click", async (e) => {
+    if (e.target.classList.contains('connected')) {
+        disconnectPort('sensor2');
+        e.target.innerHTML = "+";
+        e.target.classList.remove('connected');
+    } else {
+        try{
+            const port = await connectPort('sensor2');
+            if (port) {
+                e.target.innerHTML = "&#8644;";
+                e.target.classList.add('connected');
+            }
+        } catch {
+            console.log("Serial port did not connect");
+        }
+    }
+    
+});
+connBox2.addEventListener("mouseenter", (e) => {
+    if (e.target.classList.contains("connected")) {
+        e.target.innerHTML = '&#10005';
+    }
+});
+connBox2.addEventListener("mouseleave", (e) => {
+    if (e.target.classList.contains("connected")) {
+        e.target.innerHTML = "&#8644;";
+    }
+});
+
+
 const stimStartStopButton = document.getElementById("stimStartStopButton");
 const gameTitleContainer = document.getElementById("gameTitleContainer");
 const backButton = document.getElementById("backButton");
 const gameButtons = document.querySelectorAll(".gameButton");
+const connContainer = document.getElementById("connContainer");
 const gameTitle = document.getElementById("gameTitle");
 function toggleHideGameButtons() {
     gameButtons.forEach(gameButton => {
         gameButton.classList.toggle("hiddenFlex");
     });
+    connContainer.classList.toggle("hiddenFlex");
 }
 
 const breathingGameButton = document.getElementById("breathingGameButton");
@@ -360,13 +430,13 @@ function addBreathingGameStim() {
     stimObject.stimOrder = 'ordered';
     
     stimObject.stimType.push('Word');
-    stimObject.stimValue.push('Breathe In')
+    stimObject.stimValue.push('Deep Inhale (5s)\nDeep Exhale (5s)')
     stimObject.stimRatio.push('1');
     stimObject.stimTime.push(10000);
 
     stimObject.stimType.push('Word');
-    stimObject.stimValue.push('Breathe Out')
-    stimObject.stimRatio.push('1');
+    stimObject.stimValue.push('Normal Breathing')
+    stimObject.stimRatio.push('3');
     stimObject.stimTime.push(10000);
 
     stimStartStopButton.disabled = false;
@@ -398,6 +468,7 @@ function addRedDotGameStim() {
 }
 
 //Start/stop running the application
+//stimStartStopButton.addEventListener("click", async (e) => {
 stimStartStopButton.addEventListener("click", async (e) => {
     if (!stimDisplay.running){
         try{
@@ -405,7 +476,6 @@ stimStartStopButton.addEventListener("click", async (e) => {
             resetColorOptions();
             clearSerialChart();
             updateSigChart(data);
-            await requestPort();
 
             e.target.textContent = "Stop";
             stimDisplay.running = true;
@@ -415,15 +485,14 @@ stimStartStopButton.addEventListener("click", async (e) => {
             stimControlToggleButton.innerHTML = "&#9654;";
 
             await showInitialCountdown();
-            await startSerial(updateInterface);
+            await startSerial('sensor1', updateInterface);
             stimDisplay.start();
-            
         } 
         catch {
-            console.error('Serial port did not connect');
+            console.error("Could not read from serial port");
         }
     } else {
-        stopSerial();
+        stopSerial('sensor1');
         stimDisplay.stop();
         e.target.textContent = "Start";
         stimDisplay.running = false;
@@ -445,7 +514,7 @@ stimPauseResumeButton.addEventListener("click", async (e) => {
 
             await showInitialCountdown();
 
-            await resumeSerial(updateInterface);
+            await resumeSerial('sensor1', updateInterface);
             stimDisplay.resume();
             e.target.textContent = "Pause";
             stimDisplay.paused = false;
@@ -454,7 +523,7 @@ stimPauseResumeButton.addEventListener("click", async (e) => {
             console.error('Serial port did not connect');
         }
     } else {
-        stopSerial();
+        stopSerial('sensor1');
         stimDisplay.pause();
         e.target.textContent = "Resume";
         stimDisplay.paused = true;
@@ -495,15 +564,15 @@ document.getElementById("resetZoomButton").addEventListener("click", () => {
 
 initSerialChart('serialChart');
 
-function updateInterface(value) {
-    updateSerialChart(value);
-    updateEDA(value);
+function updateInterface(value, id) {
+    updateSerialChart(value, id);
+    updateEDA(value, id);
 }
 
 let firstStimFlag = true;
 stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
     if (!firstStimFlag) {
-        let edaDeltaDisplay = analyzeEDA();
+        let edaDeltaDisplay = analyzeEDA(id);
         annotateChartWithDelta(edaDeltaDisplay);
     } else  {
         getCurrentStim();
@@ -516,18 +585,36 @@ stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
 //////////////////Data Analysis/////////////////////////
 initSigChart('sigChart');
 
-let stimEDAValues = [];
-let oldStimValue = '';
-let data = [];
+const portStates = {};
 
-function resetEDAValues() {
-    stimEDAValues = [];
-    oldStimValue = '';
-    data = [];
+// let stimEDAValues = [];
+// let oldStimValue = '';
+// let data = [];
+
+function ensurePortState(id) {
+    if (!portStates.has(id)) {
+        portStates.set(id, {
+            stimEDAValues: [],
+            oldStimValue: '',
+            data: [],
+        })
+    }
+    return portStates.get(id);
 }
 
-function updateEDA(value) {
-    stimEDAValues.push(value);
+function resetEDAValues(id) {
+    const state = portStates.get(id);
+    // stimEDAValues = [];
+    // oldStimValue = '';
+    // data = [];
+    state.stimEDAValues = [];
+    state.oldStimValue = '';
+    state.data = [];
+}
+
+function updateEDA(value, id) {
+    const state = portStates.get(id);
+    state.stimEDAValues.push(value);
 }
 
 let currentStimValue;
@@ -558,21 +645,20 @@ function findMaxDelta(data) {
     return maxDelta;
 }
 
-function analyzeEDA() {
+function analyzeEDA(id) {
+    const state = ensurePortState(id);
     getCurrentStim();
-    let edaDelta = findMaxDelta(stimEDAValues);
-    if(!data[oldStimValue]) {
-        data[oldStimValue] = { 
+    const edaDelta = findMaxDelta(state.stimEDAValues);
+    if(!state.data[state.oldStimValue]) {
+        state.data[state.oldStimValue] = { 
             datapoints: []
         };
     }
-    data[oldStimValue].datapoints.push(edaDelta);
-    data = analyze(data);
-    console.log(`EDA value length: ${stimEDAValues.length}`);
-    console.log(data);
+    state.data[state.oldStimValue].datapoints.push(edaDelta);
+    state.data = analyze(data);
     updateSigChart(data);
     
-    stimEDAValues = [];
-    oldStimValue = currentStimValue;
+    state.stimEDAValues = [];
+    state.oldStimValue = currentStimValue;
     return edaDelta;
 }
