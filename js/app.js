@@ -318,7 +318,9 @@ connBox1.addEventListener("click", async (e) => {
         e.target.classList.remove('connected');
     } else {
         try{
-            const port = await connectPort('sensor1');
+            const portID = 'sensor1';
+            const port = await connectPort(portID);
+            const portState = ensurePortState(portID);
             if (port) {
                 e.target.innerHTML = "&#8644;";
                 e.target.classList.add('connected');
@@ -348,7 +350,9 @@ connBox2.addEventListener("click", async (e) => {
         e.target.classList.remove('connected');
     } else {
         try{
-            const port = await connectPort('sensor2');
+            const portID = 'sensor2';
+            const port = await connectPort(portID);
+            const portState = ensurePortState(portID);
             if (port) {
                 e.target.innerHTML = "&#8644;";
                 e.target.classList.add('connected');
@@ -383,6 +387,16 @@ function toggleHideGameButtons() {
     });
     connContainer.classList.toggle("hiddenFlex");
 }
+
+const debugGameButton = document.getElementById("debugGameButton");
+debugGameButton.addEventListener("click", () => {
+    toggleHideGameButtons()
+    gameTitleContainer.classList.toggle("hiddenFlex");
+    stimPauseResumeButton.classList.toggle("hiddenFlex");
+    stimStartStopButton.classList.toggle("hiddenFlex");
+    gameTitle.textContent = "Debug";
+    addDebugStim();
+})
 
 const breathingGameButton = document.getElementById("breathingGameButton");
 breathingGameButton.addEventListener("click", () => {
@@ -424,6 +438,29 @@ backButton.addEventListener("click", () => {
     gameTitle.textContent = "";
     clearStimItems();
 })
+
+//Add items to the stim object for the breathing game
+function addDebugStim() {
+    stimObject.stimOrder = 'random';
+    
+    stimObject.stimType.push('Word');
+    stimObject.stimValue.push('a')
+    stimObject.stimRatio.push('1');
+    stimObject.stimTime.push(1000);
+
+    stimObject.stimType.push('Word');
+    stimObject.stimValue.push('b')
+    stimObject.stimRatio.push('1');
+    stimObject.stimTime.push(1000);
+
+    stimObject.stimType.push('Word');
+    stimObject.stimValue.push('c')
+    stimObject.stimRatio.push('1');
+    stimObject.stimTime.push(1000);
+
+    stimStartStopButton.disabled = false;
+    renderStimItemContainer();
+}
 
 //Add items to the stim object for the breathing game
 function addBreathingGameStim() {
@@ -472,10 +509,18 @@ function addRedDotGameStim() {
 stimStartStopButton.addEventListener("click", async (e) => {
     if (!stimDisplay.running){
         try{
-            resetEDAValues();
+            for (const [id, state] of portStates.entries()) {
+                resetEDAValues(id);
+                clearSerialChart(id);
+            }
+            oldStimValue = '';
+
+            // portStates.forEach(state => {
+            //     resetEDAValues(state.id);
+            //     clearSerialChart(state.id);
+            // })
             resetColorOptions();
-            clearSerialChart();
-            updateSigChart(data);
+            updateSigChart({});
 
             e.target.textContent = "Stop";
             stimDisplay.running = true;
@@ -485,7 +530,7 @@ stimStartStopButton.addEventListener("click", async (e) => {
             stimControlToggleButton.innerHTML = "&#9654;";
 
             await showInitialCountdown();
-            await startSerial('sensor1', updateInterface);
+            await startSerial('sensor1', updateInterface); //problem
             stimDisplay.start();
         } 
         catch {
@@ -572,8 +617,11 @@ function updateInterface(value, id) {
 let firstStimFlag = true;
 stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
     if (!firstStimFlag) {
-        let edaDeltaDisplay = analyzeEDA(id);
-        annotateChartWithDelta(edaDeltaDisplay);
+        for (const [id, state] of portStates.entries()) {
+            let edaDeltaDisplay = analyzeEDA(id);
+            annotateChartWithDelta(edaDeltaDisplay);
+        }
+        oldStimValue = currentStimValue;
     } else  {
         getCurrentStim();
         oldStimValue = currentStimValue;
@@ -585,17 +633,17 @@ stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
 //////////////////Data Analysis/////////////////////////
 initSigChart('sigChart');
 
-const portStates = {};
+const portStates = new Map();
 
 // let stimEDAValues = [];
-// let oldStimValue = '';
+let oldStimValue = '';
 // let data = [];
 
 function ensurePortState(id) {
     if (!portStates.has(id)) {
         portStates.set(id, {
             stimEDAValues: [],
-            oldStimValue: '',
+            // oldStimValue: '',
             data: [],
         })
     }
@@ -603,13 +651,15 @@ function ensurePortState(id) {
 }
 
 function resetEDAValues(id) {
-    const state = portStates.get(id);
+    if (portStates.has(id)) {
+        const state = portStates.get(id);
+        state.stimEDAValues = [];
+        // state.oldStimValue = '';
+        state.data = [];
+    }
     // stimEDAValues = [];
     // oldStimValue = '';
     // data = [];
-    state.stimEDAValues = [];
-    state.oldStimValue = '';
-    state.data = [];
 }
 
 function updateEDA(value, id) {
@@ -645,20 +695,47 @@ function findMaxDelta(data) {
     return maxDelta;
 }
 
+function mergeData() {
+    const merged = {};
+
+    for (const [id, state] of portStates.entries()) {
+        for (const [stim, obj] of Object.entries(state.data)) {
+            if (stim === 'grandMean' || stim === 'grandStdDev') continue;
+            if (!merged[stim]) merged[stim] = {};
+            // console.log("obj:");
+            // console.log(obj);
+            
+            console.log("obj.avgPValue:");
+            console.log(obj.avgPValue);
+            merged[stim][id] = obj.avgPValue;
+        }
+    }
+
+    console.log("merged:");
+    console.log(merged);
+
+    return merged;
+}
+
 function analyzeEDA(id) {
     const state = ensurePortState(id);
     getCurrentStim();
     const edaDelta = findMaxDelta(state.stimEDAValues);
-    if(!state.data[state.oldStimValue]) {
-        state.data[state.oldStimValue] = { 
+    if(!state.data[oldStimValue]) {
+        state.data[oldStimValue] = { 
             datapoints: []
         };
     }
-    state.data[state.oldStimValue].datapoints.push(edaDelta);
-    state.data = analyze(data);
-    updateSigChart(data);
+    state.data[oldStimValue].datapoints.push(edaDelta);
+    state.data = analyze(state.data);
+
+    const mergedData = mergeData();
+    console.log(mergedData);
+
+    //updateSigChart(state.data, id);
+    updateSigChart(mergedData);
     
     state.stimEDAValues = [];
-    state.oldStimValue = currentStimValue;
+    // oldStimValue = currentStimValue;
     return edaDelta;
 }

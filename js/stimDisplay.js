@@ -174,7 +174,7 @@ export default class CreateStimDisplay{
                 stopTime
             }));
         }
-        this.drawCountdown(this.countdownTarget, this.expandedTime[this.index])
+        this.drawCountdown(this.countdownTarget, this.expandedTime[this.index]);
     }
 
     drawCountdown(canvas, duration) {

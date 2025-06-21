@@ -120,14 +120,14 @@ export function updateSerialChart(value, id) {
 
     let dataset = chart.data.datasets.find(ds => ds.label === id);
 
-    if (!dataset) {
-        dataset = {
-            label: id,
-            data: [],
-            pointRadius:0,
-        };
-        chart.data.datasets.push(dataset);
-    }
+    // if (!dataset) {
+    //     dataset = {
+    //         label: id,
+    //         data: [],
+    //         pointRadius:0,
+    //     };
+    //     chart.data.datasets.push(dataset);
+    // }
 
     // chart.data.datasets[0].data.push({ x: now, y: value});
 
@@ -196,8 +196,23 @@ export function annotateChartWithDelta(edaDelta) {
     }
 }
 
-export function clearSerialChart() {
-    chart.data.datasets[0].data = [];
-    chart.options.plugins.annotation.annotations = {};
+export function clearSerialChart(id) {
+    let dataset = chart.data.datasets.find(ds => ds.label === id);
+
+    if (!dataset) {
+        dataset = {
+            label: id,
+            data: [],
+            pointRadius:0,
+        };
+        chart.data.datasets.push(dataset);
+    }
+    
+    dataset.data = []
+
+    if(chart.options.plugins.annotation.annotations) {
+        chart.options.plugins.annotation.annotations = {}; //update to include ID 
+    }
+
     chart.update();
 }

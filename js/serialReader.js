@@ -27,15 +27,11 @@ export async function connectPort(id) {
         readableStreamClosed: null,
         buffer: '',
     });
-    console.log("after connection:")
-    console.log(ports)
     return port;
 }
 
 export function disconnectPort(id) {
     ports.delete(id);
-    console.log("after disconnection:")
-    console.log(ports)
 } 
 
 // export async function startSerial(onData) {
@@ -79,14 +75,12 @@ export async function startSerial(id, onData) {
     (async () => {
         try {
             while (true) {
-                // const { value, done } = await reader.read();
                 const { value, done } = await state.reader.read();
                 if (done) {
                     // reader.releaseLock();
                     state.reader.releaseLock();
                     break;
                 }
-
                 const number = parseInt(value, 10);
                 if (!isNaN(number)) {
                     onData(number, id);

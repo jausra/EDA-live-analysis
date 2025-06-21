@@ -80,7 +80,7 @@ export function initSigChart(canvasId) {
                 datalabels: { 
                     anchor: 'center',
                     formatter: (value) => {
-                        if (isNaN(value)) {
+                        if (value === null || isNaN(value)) {
                             return null;
                         }
                         return Number(value).toFixed(3);
@@ -100,16 +100,47 @@ export function initSigChart(canvasId) {
 }
 
 export function updateSigChart(data) {
-    const sorted = Object.entries(data).filter(([label, obj]) => Array.isArray(obj.datapoints)).sort(
-        ([, objA], [, objB]) => (
-            objB.avgPValue - objA.avgPValue
-        )
-    );
-    const labels = sorted.map(([label]) => label);
-    const pValues = sorted.map(([, obj]) => obj.avgPValue);
+    // console.log("data:");
+    // console.log(data);
+    // const sorted = Object.entries(data).filter(([label, obj]) => Array.isArray(obj.datapoints)).sort(
+    //     ([, objA], [, objB]) => (
+    //         objB.avgPValue - objA.avgPValue
+    //     )
+    // );
+    // const labels = sorted.map(([label]) => label);
+    // const pValues = sorted.map(([, obj]) => obj.avgPValue);
+
+    const labels = [];
+    const values = [];
+
+    const sortedStims = Object.entries(data)
+        .map(([stim, streams]) => {
+            const pValues = Object.values(streams).filter(
+                p => typeof p === 'number' && !isNaN(p)
+            );
+
+            const avgPValue = pValues.length > 0 
+                ? pValues.reduce((a, b) => a + b, 0) / pValues.length
+                : 1;
+
+            return { stim, streams, avgPValue };
+        })
+        .sort((a, b) => b.avgPValue - a.avgPValue);
+
+    for (const { stim, streams } of sortedStims) {
+        for (const [stream, pValue] of Object.entries(streams)) {
+            if (typeof pValue === 'number' && !isNaN(pValue)){
+                labels.push(`${stim}\n${stream}`);
+                values.push(pValue);
+            }
+        }
+
+        labels.push('');
+        values.push(null);
+    }
 
     chart.data.labels = labels;
-    chart.data.datasets[0].data = pValues;
+    chart.data.datasets[0].data = values;
 
     chart.update();
 }
