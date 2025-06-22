@@ -110,15 +110,19 @@ header h1 {
 #gameContainer {
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     width: 100%;
     align-items: center;
     font-size: 36px;
     font-weight: 900;
-    transform: translateY(50%);
+    height: 79%;
+    overflow: scroll;
+    margin-top: 20px;
 }
 
 .gameButton {
     display: flex;
+    flex: 0 0 auto;
     width: 90%;
     height: 120px;
     margin-top: 20px;
@@ -130,6 +134,12 @@ header h1 {
 
 .gameButton:hover {
     cursor: pointer;
+}
+
+.gameButton.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 #gameTitleContainer {

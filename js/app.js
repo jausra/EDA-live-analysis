@@ -310,10 +310,12 @@ function toggleStimControlDisable(isDisabled) {
 }
 
 //////////////////General Stimulation Control//////////////////
+
 const connBox1 = document.getElementById("connBox1");
 connBox1.addEventListener("click", async (e) => {
     if (e.target.classList.contains('connected')) {
         disconnectPort('sensor1');
+        cancelPortState('sensor1');
         e.target.innerHTML = "+";
         e.target.classList.remove('connected');
     } else {
@@ -329,7 +331,7 @@ connBox1.addEventListener("click", async (e) => {
             console.log("Serial port did not connect");
         }
     }
-    
+    updateGameButtonClickability();
 });
 connBox1.addEventListener("mouseenter", (e) => {
     if (e.target.classList.contains("connected")) {
@@ -346,6 +348,7 @@ const connBox2 = document.getElementById("connBox2");
 connBox2.addEventListener("click", async (e) => {
     if (e.target.classList.contains('connected')) {
         disconnectPort('sensor2');
+        cancelPortState('sensor2');
         e.target.innerHTML = "+";
         e.target.classList.remove('connected');
     } else {
@@ -361,7 +364,7 @@ connBox2.addEventListener("click", async (e) => {
             console.log("Serial port did not connect");
         }
     }
-    
+    updateGameButtonClickability();
 });
 connBox2.addEventListener("mouseenter", (e) => {
     if (e.target.classList.contains("connected")) {
@@ -378,13 +381,12 @@ connBox2.addEventListener("mouseleave", (e) => {
 const stimStartStopButton = document.getElementById("stimStartStopButton");
 const gameTitleContainer = document.getElementById("gameTitleContainer");
 const backButton = document.getElementById("backButton");
+const gameContainer = document.getElementById("gameContainer");
 const gameButtons = document.querySelectorAll(".gameButton");
 const connContainer = document.getElementById("connContainer");
 const gameTitle = document.getElementById("gameTitle");
 function toggleHideGameButtons() {
-    gameButtons.forEach(gameButton => {
-        gameButton.classList.toggle("hiddenFlex");
-    });
+    gameContainer.classList.toggle("hiddenFlex");
     connContainer.classList.toggle("hiddenFlex");
 }
 
@@ -648,6 +650,27 @@ function ensurePortState(id) {
         })
     }
     return portStates.get(id);
+}
+
+function cancelPortState(id) {
+    if (portStates.has(id)) {
+        portStates.delete(id)
+    }
+}
+
+function updateGameButtonClickability() {
+
+    const gameButtonDisable = portStates.size === 0 
+    console.log("portStates.size:");
+    console.log(portStates.size);
+
+    gameButtons.forEach(button => {
+        if (gameButtonDisable) {
+            button.classList.toggle("disabled", true);
+        } else {
+            button.classList.toggle("disabled", false);
+        }
+    })
 }
 
 function resetEDAValues(id) {
