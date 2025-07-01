@@ -84,6 +84,21 @@ header h1 {
     height: 15%;
 }
 
+#folderBox {
+    height: 100px;
+    width: 100px;
+    background-color: #bfbfbf;
+    margin: 5%;
+    text-align: center;
+    font-size: 100px;
+    line-height: 1;
+}
+
+#folderBox:hover { 
+    background-color: lightblue;
+    cursor: pointer;
+}
+
 .connBox {
     height: 100px;
     width: 100px;
@@ -150,13 +165,14 @@ header h1 {
 }
 
 #backButton {
-    background-color: white;
-    /* align-self: flex-start; */
+    padding: 10px 20px;
     margin-left: 2.5%;
     margin-top: 20px;
     margin-bottom: 20px;
-    padding: 7px 15px;
-    border-radius: 10px;
+    background-color: lightblue;
+    border: none;
+    border-radius: 5px;
+    font-size: 20px;
 }
 
 #backButton:hover {
@@ -347,6 +363,15 @@ header h1 {
 }
 
 #stimPauseResumeButton {
+    padding: 10px 20px;
+    margin: 20px;
+    background-color: lightblue;
+    border: none;
+    border-radius: 5px;
+    font-size: 20px;
+}
+
+#saveDataButton {
     padding: 10px 20px;
     margin: 20px;
     background-color: lightblue;

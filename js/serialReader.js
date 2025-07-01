@@ -76,6 +76,7 @@ export async function startSerial(id, onData) {
         try {
             while (true) {
                 const { value, done } = await state.reader.read();
+                const now = Date.now();
                 if (done) {
                     // reader.releaseLock();
                     state.reader.releaseLock();
@@ -83,7 +84,8 @@ export async function startSerial(id, onData) {
                 }
                 const number = parseInt(value, 10);
                 if (!isNaN(number)) {
-                    onData(number, id);
+                    // onData(number, id);
+                    onData(number, now, id);
                 }
             }
         } catch (err) {
@@ -99,7 +101,7 @@ export async function stopSerial(id) {
     
     const textEncoder = new TextEncoderStream();
     const writer = textEncoder.writable.getWriter();
-    const writableStreamClosed = textEncoder.readable.pipeTo(port.writable);
+    const writableStreamClosed = textEncoder.readable.pipeTo(state.port.writable);
 
     // reader.cancel();
     state.reader.cancel();

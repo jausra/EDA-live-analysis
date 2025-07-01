@@ -10,11 +10,6 @@ export function initSerialChart(canvasId) {
         type: 'line',
         data: {
             datasets: [
-            //     {
-            //     label: 'EDA',
-            //     data: [],
-            //     pointRadius: 0,
-            // }
         ]
         },
         options: {
@@ -71,10 +66,11 @@ export function initSerialChart(canvasId) {
                     }
                 },
                 y: {
+                    position: 'left',
                     title: {
                         display: true,
-                        text: 'EDA Value (ADC)',
-                        color: '#000',
+                        text: 'EDA Value (Port 1)',
+                        color: 'purple',
                         font: {
                             weight: 'bold',
                             size: 16,
@@ -87,7 +83,7 @@ export function initSerialChart(canvasId) {
                             size: 14,
                         }
                     },
-                }
+                },
             }, 
             maintainAspectRatio: false,
         },
@@ -114,29 +110,14 @@ export function initSerialChart(canvasId) {
     })
 }
 
-// export function updateSerialChart(value) {
-export function updateSerialChart(value, id) {
-    const now = Date.now();
+export function updateSerialChart(value, now, id) {
+    // const now = Date.now();
 
     let dataset = chart.data.datasets.find(ds => ds.label === id);
-
-    // if (!dataset) {
-    //     dataset = {
-    //         label: id,
-    //         data: [],
-    //         pointRadius:0,
-    //     };
-    //     chart.data.datasets.push(dataset);
-    // }
-
-    // chart.data.datasets[0].data.push({ x: now, y: value});
 
     dataset.data.push({ x: now, y: value })
 
     if (autoscroll) {
-        // const recentData = chart.data.datasets[0].data.slice(`-${AUTOSCROLL_WINDOW}`);
-        // const minX = recentData[0].x;
-        // const maxX = recentData[recentData.length - 1].x;
         const maxX = Date.now();
         const minX = maxX - 5000;
 
@@ -177,7 +158,7 @@ export function annotateChartWithStim(stim, color='random', startTime, stopTime)
                 size: 24,
                 weight: 'bold',
             },
-            color: '#000',
+            color: 'blue',
             clip: true,
             //z: 0
         },
@@ -186,24 +167,58 @@ export function annotateChartWithStim(stim, color='random', startTime, stopTime)
     chart.update();
 }
 
-export function annotateChartWithDelta(edaDelta) {
-    if (`stim-${previousStartTime}` in chart.options.plugins.annotation.annotations) {
-        const label = chart.options.plugins.annotation.annotations[`stim-${previousStartTime}`].label;
+export function annotateChartWithDelta(portDeltas, stim, previousStartTime) {
+    const key = `stim-${previousStartTime}`;
+    const annotation = chart.options.plugins.annotation.annotations[key];
+    if (!annotation) return;
 
-        label.content = [label.content, edaDelta];
-        
-        chart.update();
+    for (const {id, delta} of portDeltas) {
+        if (id === 'sensor1') {
+            annotation.label.content.push(`1: ${delta}`);
+        } else {
+            annotation.label.content.push(`2: ${delta}`);
+        }
     }
+    chart.update();
 }
+
+
 
 export function clearSerialChart(id) {
     let dataset = chart.data.datasets.find(ds => ds.label === id);
 
     if (!dataset) {
+        const multiplePorts = chart.data.datasets.length > 0;
+
+        if (multiplePorts && !chart.options.scales.y2) {
+            chart.options.scales.y2 = {
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'EDA Value (Port 2)',
+                    color: 'green',
+                    font: {
+                        weight: 'bold',
+                        size: 16,
+                    }
+                },
+                ticks: {
+                    color: '#000',
+                    font: {
+                        weight: 'bold',
+                        size: 14,
+                    }
+                },
+            }
+        }
+
         dataset = {
             label: id,
             data: [],
             pointRadius:0,
+            borderColor: id === 'sensor1' ? 'purple' : 'green', 
+            backgroundColor: id === 'sensor1' ? 'purple' : 'green',
+            yAxisID: id === 'sensor1' ? 'y' : 'y2'
         };
         chart.data.datasets.push(dataset);
     }

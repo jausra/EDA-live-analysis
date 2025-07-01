@@ -130,7 +130,8 @@ export function updateSigChart(data) {
     for (const { stim, streams } of sortedStims) {
         for (const [stream, pValue] of Object.entries(streams)) {
             if (typeof pValue === 'number' && !isNaN(pValue)){
-                labels.push(`${stim}\n${stream}`);
+                const prefix = stream === 'sensor1' ? '1: ' : '2: ';
+                labels.push(`${prefix}${stim}`);
                 values.push(pValue);
             }
         }
