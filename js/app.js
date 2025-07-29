@@ -1,10 +1,12 @@
 import CreateStimObject from './stimObject.js';
 import CreateStimDisplay from './stimDisplay.js';
-import { connectPort, disconnectPort, startSerial, stopSerial, resumeSerial } from './serialReader.js'; 
+import { connectPort, disconnectPort, startSerial, stopSerial, resumeSerial, serialWrite } from './serialReader.js'; 
 import { initSerialChart, updateSerialChart, setAutoscroll, annotateChartWithStim, annotateChartWithDelta, clearSerialChart } from './serialChart.js';
 import { resetColorOptions } from './utils.js';
 import { analyze } from './stats.js';
-import { initSigChart, updateSigChart } from './significanceChart.js';
+import { initSigChart, updateSigChart, clearSigChart } from './significanceChart.js';
+import { initMovingSigChart, updateMovingSigChart, clearMovingSigChart } from './movingSignificanceChart.js';
+// import { submitCal } from './calibrate.js';
 
 
 //////////////////Modal Controls//////////////////
@@ -250,7 +252,8 @@ function renderStimItemContainer() {
                 stimObject.stimRatio.length === 0 &&
                 stimObject.stimTime.length === 0
             ) {
-                stimStartStopButton.disabled = true;
+                calibrateButton.disabled = true;
+                // stimStartStopButton.disabled = true;
             }
 
             renderStimItemContainer();
@@ -287,7 +290,8 @@ addStimButton.addEventListener("click", () => {
     stimObject.stimRatio.push(stimRatioSelector.value);
     stimObject.stimTime.push(1000 * parseFloat(stimTimeSelector.value));
 
-    stimStartStopButton.disabled = false;
+    calibrateButton.disabled = false;
+    // stimStartStopButton.disabled = false;
     renderStimItemContainer();
 });
 
@@ -385,7 +389,7 @@ connBox2.addEventListener("mouseleave", (e) => {
     }
 });
 
-
+const calibrateButton = document.getElementById("calibrateButton");
 const stimStartStopButton = document.getElementById("stimStartStopButton");
 const gameTitleContainer = document.getElementById("gameTitleContainer");
 const backButton = document.getElementById("backButton");
@@ -402,6 +406,7 @@ const debugGameButton = document.getElementById("debugGameButton");
 debugGameButton.addEventListener("click", () => {
     toggleHideGameButtons()
     gameTitleContainer.classList.toggle("hiddenFlex");
+    calibrateButton.classList.toggle("hiddenFlex");
     stimPauseResumeButton.classList.toggle("hiddenFlex");
     stimStartStopButton.classList.toggle("hiddenFlex");
     saveDataButton.classList.toggle("hiddenFlex");
@@ -413,6 +418,7 @@ const breathingGameButton = document.getElementById("breathingGameButton");
 breathingGameButton.addEventListener("click", () => {
     toggleHideGameButtons()
     gameTitleContainer.classList.toggle("hiddenFlex");
+    calibrateButton.classList.toggle("hiddenFlex");
     stimPauseResumeButton.classList.toggle("hiddenFlex");
     stimStartStopButton.classList.toggle("hiddenFlex");
     saveDataButton.classList.toggle("hiddenFlex");
@@ -424,6 +430,7 @@ const redDotGameButton = document.getElementById("redDotGameButton");
 redDotGameButton.addEventListener("click", () => {
     toggleHideGameButtons()
     gameTitleContainer.classList.toggle("hiddenFlex");
+    calibrateButton.classList.toggle("hiddenFlex");
     stimPauseResumeButton.classList.toggle("hiddenFlex");
     stimStartStopButton.classList.toggle("hiddenFlex");
     saveDataButton.classList.toggle("hiddenFlex");
@@ -436,6 +443,7 @@ const stimGenAndRand = document.getElementById("stimGenAndRand");
 customGameButton.addEventListener("click", () => {
     toggleHideGameButtons()
     stimGenAndRand.classList.toggle("hiddenFlex", false);
+    calibrateButton.classList.toggle("hiddenFlex");
     gameTitleContainer.classList.toggle("hiddenFlex");
     stimPauseResumeButton.classList.toggle("hiddenFlex");
     stimStartStopButton.classList.toggle("hiddenFlex");
@@ -447,6 +455,7 @@ backButton.addEventListener("click", () => {
     toggleHideGameButtons()
     stimGenAndRand.classList.toggle("hiddenFlex", true);
     gameTitleContainer.classList.toggle("hiddenFlex");
+    calibrateButton.classList.toggle("hiddenFlex");
     stimPauseResumeButton.classList.toggle("hiddenFlex");
     stimStartStopButton.classList.toggle("hiddenFlex");
     saveDataButton.classList.toggle("hiddenFlex");
@@ -473,7 +482,8 @@ function addDebugStim() {
     stimObject.stimRatio.push('1');
     stimObject.stimTime.push(1000);
 
-    stimStartStopButton.disabled = false;
+    calibrateButton.disabled = false;
+    // stimStartStopButton.disabled = false;
     renderStimItemContainer();
 }
 
@@ -491,7 +501,8 @@ function addBreathingGameStim() {
     stimObject.stimRatio.push('3');
     stimObject.stimTime.push(10000);
 
-    stimStartStopButton.disabled = false;
+    calibrateButton.disabled = false;
+    // stimStartStopButton.disabled = false;
     renderStimItemContainer();
 }
 
@@ -515,9 +526,124 @@ function addRedDotGameStim() {
     stimObject.stimRatio.push('4');
     stimObject.stimTime.push(9000);
 
-    stimStartStopButton.disabled = false;
+    calibrateButton.disabled = false;
+    // stimStartStopButton.disabled = false;
     renderStimItemContainer();
 }
+
+const calContainer = document.getElementById("calContainer");
+calibrateButton.addEventListener("click", async () => {
+    try{
+        clearSigChart();
+        stimStartStopButton.disabled = false;
+        calibrateButton.disabled = true;
+        calContainer.classList.toggle("hiddenFlex", false);
+
+        for (const [id, state] of portStates.entries()) {
+            resetEDAValues(id);
+            clearSerialChart(id);
+        }
+        for (const [id, state] of portStates.entries()) {
+            await startSerial(id, updateSerialChart);
+        }
+    } catch {
+        console.error("Could not read from serial port");
+    }
+});
+
+
+const offsetMin = 4; //kOhm
+// const offsetMax = 2000; //kOhm USE
+const offsetMax = 2000; //kOhm
+const offsetDefault = 1000; //kOhm 
+// const gainMin = 1; //kOhm USE
+const gainMin = 0.4; //kOhm
+// const gainMax = 100; //kOhm USE
+const gainMax = 100; //kOhm
+const gainDefault = 10; //kOhm
+
+const calOffsetInput = document.getElementById("calOffsetInput");
+const calOffsetSlider = document.getElementById("calOffsetSlider");
+const calGainInput = document.getElementById("calGainInput");
+const calGainSlider = document.getElementById("calGainSlider");
+
+calOffsetSlider.min = offsetMin;
+calOffsetSlider.max = offsetMax;
+calOffsetInput.value = offsetDefault;
+calOffsetSlider.value = offsetDefault;
+
+calGainSlider.min = gainMin;
+calGainSlider.max = gainMax;
+calGainInput.value = gainDefault;
+calGainSlider.value = gainDefault;
+
+calOffsetInput.addEventListener("change", (e) => {
+    let inputOffset = e.target.value;
+    if (inputOffset < offsetMin) {
+        inputOffset = offsetMin;
+        e.target.value = inputOffset;
+    }
+    if (inputOffset > offsetMax) {
+        inputOffset = offsetMax;
+        e.target.value = inputOffset;
+    }
+    calOffsetSlider.value = inputOffset;
+    console.log("calOffsetInput updated to", inputOffset);
+    console.log("calOffsetSlider is now", calOffsetSlider.value);
+});
+
+calOffsetSlider.addEventListener("change", (e) => {
+    let sliderOffset = e.target.value;
+    if (sliderOffset < offsetMin) {
+        sliderOffset = offsetMin;
+    }
+    if (sliderOffset > offsetMax) {
+        sliderOffset = offsetMax;
+    }
+    calOffsetInput.value = sliderOffset;
+    console.log("calOffsetSlider updated to", sliderOffset);
+    console.log("calOffsetInput is now", calOffsetInput.value);
+});
+
+calGainInput.addEventListener("change", (e) => {
+    let inputGain = e.target.value;
+    if (inputGain < gainMin) {
+        inputGain = gainMin;
+        e.target.value = inputGain;
+    }
+    if (inputGain > gainMax) {
+        inputGain = gainMax;
+        e.target.value = inputGain;
+    }
+    calGainSlider.value = inputGain;
+    console.log("calGainInput updated to", inputGain);
+    console.log("calGainSlider is now", calGainSlider.value);
+});
+
+calGainSlider.addEventListener("change", (e) => {
+    let sliderGain = e.target.value;
+    if (sliderGain < gainMin) {
+        sliderGain = gainMin;
+    }
+    if (sliderGain > gainMax) {
+        sliderGain = gainMax;
+    }
+    calGainInput.value = sliderGain;
+    console.log("calGainSlider updated to", sliderGain);
+    console.log("calGainInput is now", calGainInput.value);
+});
+
+const calSubmitButton = document.getElementById("calSubmitButton");
+calSubmitButton.addEventListener("click", async () => {
+    const command = `SET R_OFF ${calOffsetInput.value} R_GAIN ${calGainInput.value}\n`;
+    // const command = 'a';
+    // const command = '\n';
+    // const command = 'n\n';
+    for (const [id, state] of portStates.entries()) {
+        console.log("sending command to ID:", id);
+        await serialWrite(id, command);
+    }
+});
 
 function formatTimeFilename(date) {
     return date.getFullYear() + '-' +
@@ -529,40 +655,82 @@ function formatTimeFilename(date) {
     String(date.getMilliseconds()).padStart(3, '0');
 }
 
+async function startSession() {
+    try{
+        stimDisplay.running = true;
+        toggleStimControlDisable(true);
+        stimStartStopButton.textContent = "Stop";
+        for (const [id, state] of portStates.entries()) {
+            // resetEDAValues(id); //maybe put back (but I think it is being taken care of in cal)
+            stopSerial(id); //new
+            clearSerialChart(id);
+        }
+        oldStimValue = '';
+
+        resetColorOptions();
+        updateSigChart({});
+
+        sessionStartTime = formatTimeFilename(new Date(Date.now()));
+
+        calContainer.classList.toggle("hiddenFlex", true);
+
+        await showInitialCountdown();
+        //await startSerial(portID, updateInterface); //problem
+        for (const [id, state] of portStates.entries()) {
+            await startSerial(id, updateInterface);
+        }
+        stimDisplay.start();
+    } 
+    catch {
+        console.error("Could not read from serial port");
+    }
+}
+
+const calStartButton = document.getElementById("calStartButton");
+calStartButton.addEventListener("click", startSession);
+
 //Start/stop running the application
 let sessionStartTime = null;
 stimStartStopButton.addEventListener("click", async (e) => {
     //const portID = 'sensor1';
     if (!stimDisplay.running){
-        try{
-            for (const [id, state] of portStates.entries()) {
-                resetEDAValues(id);
-                clearSerialChart(id);
-            }
-            oldStimValue = '';
+        // e.target.textContent = "Stop";
+        // stimDisplay.running = true;
+        // toggleStimControlDisable(true);
+        stimControlContainer.classList.toggle("collapsed");
+        stimDisplayContainerWrapper.classList.add("shifted");
+        stimControlToggleButton.innerHTML = "&#9654;";
 
-            resetColorOptions();
-            updateSigChart({});
+        startSession();
+        // try{
+        //     for (const [id, state] of portStates.entries()) {
+        //         // resetEDAValues(id); //maybe put back (but I think it is being taken care of in cal)
+        //         clearSerialChart(id);
+        //     }
+        //     oldStimValue = '';
 
-            e.target.textContent = "Stop";
-            stimDisplay.running = true;
-            toggleStimControlDisable(true);
-            stimControlContainer.classList.toggle("collapsed");
-            stimDisplayContainerWrapper.classList.add("shifted");
-            stimControlToggleButton.innerHTML = "&#9654;";
+        //     resetColorOptions();
+        //     updateSigChart({});
 
-            sessionStartTime = formatTimeFilename(new Date(Date.now()));
+        //     e.target.textContent = "Stop";
+        //     stimDisplay.running = true;
+        //     toggleStimControlDisable(true);
+        //     stimControlContainer.classList.toggle("collapsed");
+        //     stimDisplayContainerWrapper.classList.add("shifted");
+        //     stimControlToggleButton.innerHTML = "&#9654;";
 
-            await showInitialCountdown();
-            //await startSerial(portID, updateInterface); //problem
-            for (const [id, state] of portStates.entries()) {
-                await startSerial(id, updateInterface);
-            }
-            stimDisplay.start();
-        } 
-        catch {
-            console.error("Could not read from serial port");
-        }
+        //     sessionStartTime = formatTimeFilename(new Date(Date.now()));
+
+        //     await showInitialCountdown();
+        //     //await startSerial(portID, updateInterface); //problem
+        //     for (const [id, state] of portStates.entries()) {
+        //         await startSerial(id, updateInterface);
+        //     }
+        //     stimDisplay.start();
+        // } 
+        // catch {
+        //     console.error("Could not read from serial port");
+        // }
     } else {
         //stopSerial(portID);
         for (const [id, state] of portStates.entries()) {
@@ -570,6 +738,8 @@ stimStartStopButton.addEventListener("click", async (e) => {
             state.stimEDAValues = [];
             state.stimEDATime = [];
         }
+        stimStartStopButton.disabled = true;
+        calibrateButton.disabled = false;
         stimDisplay.stop();
         e.target.textContent = "Start";
         stimDisplay.running = false;
@@ -589,6 +759,7 @@ stimPauseResumeButton.addEventListener("click", async (e) => {
 
             await showInitialCountdown();
             //await resumeSerial(portID, updateInterface);
+            console.log("portStates.entries():", portStates.entries())
             for (const [id, state] of portStates.entries()) {
                 state.stimEDAValues = [];
                 state.stimEDATime = [];
@@ -640,7 +811,6 @@ function generateCSVHeaders() {
     const baseColumns = ['time', 'value', 'stim'];
     const stimColumns = [];
     for (const [ stim, _ ] of Object.entries(mergedData)) {
-        // console.log("stim:", stim);
         const stimPrefix = stim.replace(/\s+/g, '_');
         stimColumns.push(
             `${stimPrefix}_max_delta`,
@@ -659,7 +829,6 @@ saveDataButton.addEventListener("click", async () => {
     const sessionFolder = await rootFolder.getDirectoryHandle(sessionStartTime, { create: true });
     
     const csvHeaders = generateCSVHeaders();
-    // console.log(csvHeaders);
     for (const [id, state] of portStates.entries()) {
         const csvName = `${sessionStartTime}_${id}.csv`;
         const csvFile = await sessionFolder.getFileHandle(csvName, { create: true });
@@ -668,7 +837,7 @@ saveDataButton.addEventListener("click", async () => {
         await writable.write(arrayToCSV(csvData[id]));
         await writable.close();
     }
-})
+});
 
 //////////////////Stimulation Display//////////////////
 const displayTarget = document.getElementById("stimDisplay");
@@ -688,8 +857,6 @@ function updateInterface(value, now, id) {
 }
 
 function updateCSVData(id, state) {
-    // console.log("----------ID-----------", id);
-    // console.log("state.stimEDATime.length:", state.stimEDATime.length);
     if(!csvData[id]) {csvData[id] = [];}
     for (let i = 0; i < state.stimEDATime.length; i++) {
         const csvDataRow = [];
@@ -698,24 +865,18 @@ function updateCSVData(id, state) {
         csvDataRow.push(oldStimValue);
         for (const [key, value] of Object.entries(state.data)) {
             if (key === 'grandMean' || key === 'grandStdDev') continue ;
-            // console.log("key:", key);
             for (const [k, v] of Object.entries(value)) {
                 if (k === 'avg' || k === 'stdDev') continue;
-                console.log("k:", k);
-                console.log("v", v);
                 if (k === 'avgPValue') {
                     csvDataRow.push((1 - v).toFixed(3));
-                    // console.log("1 - v:", (1 - v).toFixed(3));
                 } else if (k === 'avgZScore') {
                     csvDataRow.push(v.toFixed(3));
-                    // console.log("v:", v.toFixed(3));
                 } else {
                     if (isNaN(v[v.length - 1])) {
                         csvDataRow.push(v[v.length - 1]);
                     } else {
                         csvDataRow.push(v[v.length - 1].toFixed(3));
                     }
-                    // console.log("v:", v.at(-1));
                 }
             }
         }
@@ -737,12 +898,9 @@ const csvData = {};
 stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
     if (!firstStimFlag) {
         const portDeltas = [];
-        // console.log("~~~~~~Port States:~~~~~~~", portStates);
         for (const [id, state] of portStates.entries()) {
             let edaDeltaDisplay = analyzeEDA(id);
             portDeltas.push({ id, delta: edaDeltaDisplay });
-            // console.log("ID", id);
-            // console.log("state.stimEDATime:", state.stimEDATime);
             updateCSVData(id, state);
             state.stimEDAValues = [];
             state.stimEDATime = [];
@@ -750,6 +908,7 @@ stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
         annotateChartWithDelta(portDeltas, currentStimValue, previousStartTime);
         oldStimValue = currentStimValue;
     } else  {
+        
         getCurrentStim();
         oldStimValue = currentStimValue;
         firstStimFlag = false;
@@ -905,3 +1064,10 @@ function analyzeEDA(id) {
     // oldStimValue = currentStimValue;
     return edaDelta;
 }
+
+const sigChartContainer = document.getElementById("sigChartContainer");
+const movingSigChartContainer = document.getElementById("movingSigChartContainer");
+sigChartContainer.addEventListener("click", () => {
+    sigChartContainer.classList.add("hiddenFlex");
+    sigChartContainer.classList.toggle("hiddenFlex");
+})

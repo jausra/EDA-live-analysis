@@ -68,6 +68,9 @@
                             <div id="stimItemContainer"></div>
                         </div>
                         <div id="displayControlButtons">
+                            <button id="calibrateButton" class="hiddenFlex" disabled>
+                                Calibrate
+                            </button>
                             <button id="stimStartStopButton" class="hiddenFlex" disabled>
                                 Start
                             </button>
@@ -82,7 +85,30 @@
                     <button id="stimControlToggleButton">&#9664;</button>
                 </div>
                 <div id="stimDisplayContainerWrapper">
+                    
                     <div id="stimDisplayContainer">
+                        <div id="calContainer" class="hiddenFlex">
+                            <div id="calDisplay">
+                                <div class="horFlex">
+                                    <p class="calTitle">Offset Resistance:</p>
+                                    <div class="calInput">
+                                        <input type="text" id="calOffsetInput">
+                                        <span class="calInputUnit">kΩ</span>
+                                    </div>
+                                </div>
+                                <input type="range" class="slider" id="calOffsetSlider">
+                                <div class="horFlex">
+                                    <p class="calTitle">Gain Resistance:</p>
+                                    <div class="calInput">
+                                        <input type="text" id="calGainInput">
+                                        <span class="calInputUnit">kΩ</span>
+                                    </div>
+                                </div>
+                                <input type="range" class="slider" id="calGainSlider">
+                                <button id="calSubmitButton">Submit</button>
+                                <button id="calStartButton">Start</button>
+                            </div>
+                        </div>
                         <div id="stimDisplay"></div>
                         <canvas id="stimCountdown" width="500" height="500"></canvas>
                     </div>

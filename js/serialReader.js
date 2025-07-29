@@ -34,57 +34,53 @@ export function disconnectPort(id) {
     ports.delete(id);
 } 
 
-// export async function startSerial(onData) {
 export async function startSerial(id, onData) {
     const state = ports.get(id);
     if (!state || !state.port) throw new Error(`No port for ID ${id}`);
 
-    // await port.open({ baudRate: 9600 });
     await state.port.open({ baudRate: 9600 });
 
     const textDecoder = new TextDecoderStream();
-    // readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
     state.readableStreamClosed = state.port.readable.pipeTo(textDecoder.writable);
 
     const lineStream = textDecoder.readable
         .pipeThrough(new TransformStream({
             transform(chunk, controller) {
-                // buffer += chunk;
                 state.buffer += chunk;
-                // let lines = buffer.split('\n');
                 let lines = state.buffer.split('\n');
-                // buffer = lines.pop();
                 state.buffer = lines.pop();
                 for (const line of lines) {
                     controller.enqueue(line.trim());
                 }
             },
             flush(controller) {
-                // if (buffer) {
                 if (state.buffer) {
-                    // controller.enqueue(buffer.trim());
                     controller.enqueue(state.buffer.trim());
                 }
             }
         }));
 
-    // let buffer = '';
-    // reader = lineStream.getReader();
     state.reader = lineStream.getReader();
 
+    //Set up writing
+    const textEncoder = new TextEncoderStream();
+    state.writableStreamClosed = textEncoder.readable.pipeTo(state.port.writable);
+    state.writer = textEncoder.writable.getWriter();
+
+    //Read loop
     (async () => {
         try {
             while (true) {
                 const { value, done } = await state.reader.read();
+                console.log(value);
                 const now = Date.now();
                 if (done) {
-                    // reader.releaseLock();
                     state.reader.releaseLock();
                     break;
                 }
-                const number = parseInt(value, 10);
+                // const number = parseInt(value, 10);
+                const number = value;
                 if (!isNaN(number)) {
-                    // onData(number, id);
                     onData(number, now, id);
                 }
             }
@@ -99,17 +95,17 @@ export async function stopSerial(id) {
     const state = ports.get(id);
     if (!state || !state.port) throw new Error(`No port for ID ${id}`);
     
-    const textEncoder = new TextEncoderStream();
-    const writer = textEncoder.writable.getWriter();
-    const writableStreamClosed = textEncoder.readable.pipeTo(state.port.writable);
+    // const textEncoder = new TextEncoderStream();
+    // const writer = textEncoder.writable.getWriter();
+    // const writableStreamClosed = textEncoder.readable.pipeTo(state.port.writable);
 
-    // reader.cancel();
-    state.reader.cancel();
-    // await readableStreamClosed.catch(() => { /* Ignore the error */ });
+    // state.reader.cancel();
+    await state.reader.cancel();
     await state.readableStreamClosed.catch(() => { /* Ignore the error */ });
 
-    writer.close();
-    await writableStreamClosed;
+    // writer.close();
+    await state.writer.close();
+    await state.writableStreamClosed;
 
     await state.port.close();
 }
@@ -158,6 +154,7 @@ export async function resumeSerial(id, onData) {
             while (true) {
                 // const { value, done } = await reader.read(); 
                 const { value, done } = await state.reader.read(); 
+                const now = Date.now();
                 if (done) {
                     // reader.releaseLock();
                     state.reader.releaseLock();
@@ -167,13 +164,23 @@ export async function resumeSerial(id, onData) {
                 const text = value.trim();
                 const number = parseInt(text, 10);
                 if (!isNaN(number)) {
-                    onData(number, id);
+                    // onData(number, id);
+                    onData(number, now, id);
                 }
             }
         } catch (err) {
             console.error(`Error reading from port ${id}:`, err);
         }
     })();
+}
+
+export async function serialWrite(id, command) {
+    const state = ports.get(id);
+    if (!state || !state.port) throw new Error(`No port for ID ${id}`);
+
+    // const encoded = new TextEncoder().encode(command);
+    // await state.writer.write(encoded);
+    await state.writer.write(command);
 }
 
 // let port = null;
