@@ -72,7 +72,7 @@ export async function startSerial(id, onData) {
         try {
             while (true) {
                 const { value, done } = await state.reader.read();
-                console.log(value);
+                // console.log(value);
                 const now = Date.now();
                 if (done) {
                     state.reader.releaseLock();

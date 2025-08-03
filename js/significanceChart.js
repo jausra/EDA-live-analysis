@@ -99,17 +99,7 @@ export function initSigChart(canvasId) {
     });
 }
 
-export function updateSigChart(data) {
-    // console.log("data:");
-    // console.log(data);
-    // const sorted = Object.entries(data).filter(([label, obj]) => Array.isArray(obj.datapoints)).sort(
-    //     ([, objA], [, objB]) => (
-    //         objB.avgPValue - objA.avgPValue
-    //     )
-    // );
-    // const labels = sorted.map(([label]) => label);
-    // const pValues = sorted.map(([, obj]) => obj.avgPValue);
-
+export function updateSigChart(data) { //modify this for a line graph
     const labels = [];
     const values = [];
 

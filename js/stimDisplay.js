@@ -6,6 +6,7 @@ export default class CreateStimDisplay{
         this.displayTarget = displayTarget;
         this.countdownTarget = countdownTarget;
         this.index = 0;
+        this.round = 0;
         this.previousLastValue = -1;
         this.compressedStimObject = compressedStimObject;
         this.running = false;
@@ -120,6 +121,7 @@ export default class CreateStimDisplay{
         this.index = this.index + 1;
         if (this.index === this.expandedValue.length){
             this.index = 0;
+            this.round = this.round + 1;
             if(this.compressedStimObject.stimOrder === 'random') {
                 this.randomizeValues();
             }
@@ -148,6 +150,7 @@ export default class CreateStimDisplay{
 
             this.stimDisplayListeners.forEach(cb => cb({
                 stim: value,
+                round: this.round,
                 color: 'random',
                 startTime,
                 stopTime
@@ -169,6 +172,7 @@ export default class CreateStimDisplay{
 
             this.stimDisplayListeners.forEach(cb => cb({
                 stim: `${value.color}\n${value.shape}`,
+                round: this.round,
                 color: colorMap[value.color],
                 startTime,
                 stopTime

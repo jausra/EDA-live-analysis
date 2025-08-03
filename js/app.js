@@ -856,30 +856,31 @@ function updateInterface(value, now, id) {
     updateEDA(value, now, id);
 }
 
-function updateCSVData(id, state) {
+function updateCSVData(id, state, round) {
     if(!csvData[id]) {csvData[id] = [];}
     for (let i = 0; i < state.stimEDATime.length; i++) {
         const csvDataRow = [];
         csvDataRow.push(state.stimEDATime[i]);
         csvDataRow.push(state.stimEDAValues[i]);
         csvDataRow.push(oldStimValue);
-        for (const [key, value] of Object.entries(state.data)) {
-            if (key === 'grandMean' || key === 'grandStdDev') continue ;
-            for (const [k, v] of Object.entries(value)) {
-                if (k === 'avg' || k === 'stdDev') continue;
-                if (k === 'avgPValue') {
-                    csvDataRow.push((1 - v).toFixed(3));
-                } else if (k === 'avgZScore') {
-                    csvDataRow.push(v.toFixed(3));
-                } else {
-                    if (isNaN(v[v.length - 1])) {
-                        csvDataRow.push(v[v.length - 1]);
-                    } else {
-                        csvDataRow.push(v[v.length - 1].toFixed(3));
-                    }
-                }
-            }
-        }
+        csvDataRow.push(round);
+        // for (const [key, value] of Object.entries(state.data)) {
+        //     if (key === 'grandMean' || key === 'grandStdDev') continue ;
+        //     for (const [k, v] of Object.entries(value)) {
+        //         if (k === 'avg' || k === 'stdDev') continue;
+        //         if (k === 'avgPValue') {
+        //             csvDataRow.push((1 - v).toFixed(3));
+        //         } else if (k === 'avgZScore') {
+        //             csvDataRow.push(v.toFixed(3));
+        //         } else {
+        //             if (isNaN(v[v.length - 1])) {
+        //                 csvDataRow.push(v[v.length - 1]);
+        //             } else {
+        //                 csvDataRow.push(v[v.length - 1].toFixed(3));
+        //             }
+        //         }
+        //     }
+        // }
         csvData[id].push(csvDataRow);
     }
 }
@@ -894,28 +895,55 @@ function arrayToCSV(data) {
 
 let firstStimFlag = true;
 let previousStartTime = null;
+let stateRound = 0;
+let previousRound = -1;
+let previousRoundStartTime = null;
+let previousRoundStopTime = null;
+let currentRoundStartTime = null;
+let previousRoundAverageTime = null;
 const csvData = {};
-stimDisplay.onStimDisplay(({ stim, color, startTime, stopTime }) => {
+stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
+    if (round !== previousRound) { 
+        previousRoundStartTime = currentRoundStartTime;
+        currentRoundStartTime = startTime;
+        previousRoundStopTime = startTime;
+        if (round > 0) {
+            previousRoundAverageTime = (previousRoundStopTime - previousRoundStartTime)/2 + previousRoundStartTime;
+            for (const [id, state] of portStates.entries()) {
+                if (!state.data) {
+                    state.data = {};
+                }
+                if (!state.data.roundTimes) {
+                    state.data.roundTimes = [];
+                }
+                state.data.roundTimes.push(previousRoundAverageTime);
+                console.log(state.data);
+            }
+        }
+        previousRound = round;
+    }
+    
     if (!firstStimFlag) {
         const portDeltas = [];
         for (const [id, state] of portStates.entries()) {
-            let edaDeltaDisplay = analyzeEDA(id);
+            let edaDeltaDisplay = analyzeEDA(id, stateRound);
             portDeltas.push({ id, delta: edaDeltaDisplay });
-            updateCSVData(id, state);
+            updateCSVData(id, state, round); //push time, value, stim, and round to 'csvData' object
             state.stimEDAValues = [];
             state.stimEDATime = [];
         }
         annotateChartWithDelta(portDeltas, currentStimValue, previousStartTime);
         oldStimValue = currentStimValue;
     } else  {
-        
         getCurrentStim();
         oldStimValue = currentStimValue;
         firstStimFlag = false;
     }
     annotateChartWithStim(stim, color, startTime, stopTime);
     previousStartTime = startTime;
-})
+    previousStartTime = startTime;
+    stateRound = round;
+});
 
 //////////////////Data Analysis/////////////////////////
 initSigChart('sigChart');
@@ -945,7 +973,6 @@ function cancelPortState(id) {
 }
 
 function updateGameButtonClickability() {
-
     const gameButtonDisable = portStates.size === 0 
 
     gameButtons.forEach(button => {
@@ -962,6 +989,7 @@ function resetEDAValues(id) {
         const state = portStates.get(id);
         state.stimEDAValues = [];
         state.stimEDATime = [];
+        state.roundTimes = [];
         // state.oldStimValue = '';
         state.data = [];
     }
@@ -1044,19 +1072,23 @@ function mergeData() {
 
 let mergedData = {};
 
-function analyzeEDA(id) {
+function analyzeEDA(id, round) {
     const state = ensurePortState(id);
     getCurrentStim();
     const edaDelta = findMaxDelta(state.stimEDAValues);
     if(!state.data[oldStimValue]) {
         state.data[oldStimValue] = { 
-            datapoints: []
+            datapoints: [],
+            rounds: []
         };
     }
     state.data[oldStimValue].datapoints.push(edaDelta);
+    state.data[oldStimValue].rounds.push(round);
     state.data = analyze(state.data);
 
-    mergedData = mergeData();
+    // console.log(state.data);
+
+    mergedData = mergeData(); //save avgPValue of each stim into mergedData
 
     //updateSigChart(state.data, id);
     updateSigChart(mergedData);
