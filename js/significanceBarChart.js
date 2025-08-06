@@ -1,9 +1,9 @@
 let chart;
 
-export function initMovingSigChart(canvasId) {
+export function initSigBarChart(canvasId) {
     const ctx = document.getElementById(canvasId).getContext('2d');
     chart = new Chart(ctx, {
-        type: 'line',
+        type: 'bar',
         data: {
             labels: [],
             datasets: [{
@@ -99,7 +99,7 @@ export function initMovingSigChart(canvasId) {
     });
 }
 
-export function updateMovingSigChart(data) {  
+export function updateSigBarChart(data) { //modify this for a line graph
     const labels = [];
     const values = [];
 
@@ -136,7 +136,7 @@ export function updateMovingSigChart(data) {
     chart.update();
 }
 
-export function clearMovingSigChart() {
+export function clearSigBarChart() {
     chart.data.labels = [];
     chart.data.datasets[0].data = [];
     chart.update();

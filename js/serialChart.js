@@ -2,7 +2,8 @@ import { randomColor } from './utils.js';
 let chart;
 let autoscroll = true;
 const AUTOSCROLL_WINDOW = 50;
-const annotationColorDict = {};
+
+export const annotationColorDict = {};
 
 export function initSerialChart(canvasId) {
     const ctx = document.getElementById(canvasId).getContext('2d');
@@ -115,7 +116,7 @@ export function updateSerialChart(value, now, id) {
 
     let dataset = chart.data.datasets.find(ds => ds.label === id);
 
-    dataset.data.push({ x: now, y: value })
+    dataset.data.push({ x: now, y: value });
 
     if (autoscroll) {
         const maxX = Date.now();

@@ -6,7 +6,7 @@ export default class CreateStimDisplay{
         this.displayTarget = displayTarget;
         this.countdownTarget = countdownTarget;
         this.index = 0;
-        this.round = 0;
+        this.round = 1;
         this.previousLastValue = -1;
         this.compressedStimObject = compressedStimObject;
         this.running = false;

@@ -3,9 +3,9 @@ import CreateStimDisplay from './stimDisplay.js';
 import { connectPort, disconnectPort, startSerial, stopSerial, resumeSerial, serialWrite } from './serialReader.js'; 
 import { initSerialChart, updateSerialChart, setAutoscroll, annotateChartWithStim, annotateChartWithDelta, clearSerialChart } from './serialChart.js';
 import { resetColorOptions } from './utils.js';
-import { analyze } from './stats.js';
-import { initSigChart, updateSigChart, clearSigChart } from './significanceChart.js';
-import { initMovingSigChart, updateMovingSigChart, clearMovingSigChart } from './movingSignificanceChart.js';
+import { analyzeAll, analyzeRounds } from './stats.js';
+import { initSigBarChart, updateSigBarChart, clearSigBarChart } from './significanceBarChart.js';
+import { initSigLineChart, updateSigLineChart, clearSigLineChart } from './significanceLineChart.js';
 // import { submitCal } from './calibrate.js';
 
 
@@ -534,7 +534,8 @@ function addRedDotGameStim() {
 const calContainer = document.getElementById("calContainer");
 calibrateButton.addEventListener("click", async () => {
     try{
-        clearSigChart();
+        // clearSigBarChart();
+        clearSigLineChart();
         stimStartStopButton.disabled = false;
         calibrateButton.disabled = true;
         calContainer.classList.toggle("hiddenFlex", false);
@@ -668,7 +669,7 @@ async function startSession() {
         oldStimValue = '';
 
         resetColorOptions();
-        updateSigChart({});
+        // updateSigBarChart({});
 
         sessionStartTime = formatTimeFilename(new Date(Date.now()));
 
@@ -710,7 +711,7 @@ stimStartStopButton.addEventListener("click", async (e) => {
         //     oldStimValue = '';
 
         //     resetColorOptions();
-        //     updateSigChart({});
+        //     updateSigBarChart({});
 
         //     e.target.textContent = "Stop";
         //     stimDisplay.running = true;
@@ -893,10 +894,21 @@ function arrayToCSV(data) {
     ).join("\n");
 }
 
+let windowRounds = 4;
+let overlapPercent = 0.25;
+
+function calculateOverlapRounds(window, overlap) {
+    const overlapRounds = Math.round(window * overlap);
+    return overlapRounds;
+}
+
+let overlapRounds = calculateOverlapRounds(windowRounds, overlapPercent);
+
 let firstStimFlag = true;
 let previousStartTime = null;
+let newRoundFlag = false;
 let stateRound = 0;
-let previousRound = -1;
+let previousRound = 0;
 let previousRoundStartTime = null;
 let previousRoundStopTime = null;
 let currentRoundStartTime = null;
@@ -907,7 +919,7 @@ stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
         previousRoundStartTime = currentRoundStartTime;
         currentRoundStartTime = startTime;
         previousRoundStopTime = startTime;
-        if (round > 0) {
+        if (round > 1) {
             previousRoundAverageTime = (previousRoundStopTime - previousRoundStartTime)/2 + previousRoundStartTime;
             for (const [id, state] of portStates.entries()) {
                 if (!state.data) {
@@ -917,8 +929,9 @@ stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
                     state.data.roundTimes = [];
                 }
                 state.data.roundTimes.push(previousRoundAverageTime);
-                console.log(state.data);
+                // console.log(state.data);
             }
+            newRoundFlag = true;
         }
         previousRound = round;
     }
@@ -926,7 +939,7 @@ stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
     if (!firstStimFlag) {
         const portDeltas = [];
         for (const [id, state] of portStates.entries()) {
-            let edaDeltaDisplay = analyzeEDA(id, stateRound);
+            let edaDeltaDisplay = analyzeEDA(id, stateRound, newRoundFlag, windowRounds, overlapRounds);
             portDeltas.push({ id, delta: edaDeltaDisplay });
             updateCSVData(id, state, round); //push time, value, stim, and round to 'csvData' object
             state.stimEDAValues = [];
@@ -943,10 +956,12 @@ stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
     previousStartTime = startTime;
     previousStartTime = startTime;
     stateRound = round;
+    newRoundFlag = false;
 });
 
 //////////////////Data Analysis/////////////////////////
-initSigChart('sigChart');
+// initSigBarChart('sigBarChart');
+initSigLineChart('sigLineChart');
 
 const portStates = new Map();
 
@@ -1071,8 +1086,9 @@ function mergeData() {
 }
 
 let mergedData = {};
+let previousWindowStartRound = 0;
 
-function analyzeEDA(id, round) {
+function analyzeEDA(id, round, newRoundFlag, windowRounds, overlapRounds) {
     const state = ensurePortState(id);
     getCurrentStim();
     const edaDelta = findMaxDelta(state.stimEDAValues);
@@ -1084,15 +1100,29 @@ function analyzeEDA(id, round) {
     }
     state.data[oldStimValue].datapoints.push(edaDelta);
     state.data[oldStimValue].rounds.push(round);
-    state.data = analyze(state.data);
 
-    // console.log(state.data);
+    if (newRoundFlag == true) {
+        if (round == (previousWindowStartRound + windowRounds)) {
+            const startRound = previousWindowStartRound;
+            const  stopRound = round;
+            state.data = analyzeRounds(state.data, startRound, stopRound);
+            const mostRecentRoundTime = state.data.windowTimes[state.data.windowTimes.length - 1];
+            Object.entries(state.data).forEach(([label, obj]) => {
+                if(obj?.datapoints && obj.avgPValue?.length){
+                    const lastAvgP = obj.avgPValue[obj.avgPValue.length - 1];
+                    updateSigLineChart(lastAvgP, mostRecentRoundTime, label);
+                }
+            });
+            
+            // console.log(state.data);
+            previousWindowStartRound = round - overlapRounds;
+        }
+    }
 
-    mergedData = mergeData(); //save avgPValue of each stim into mergedData
+    // state.data = analyzeAll(state.data);
+    // mergedData = mergeData(); //save avgPValue of each stim into mergedData
+    // updateSigBarChart(mergedData);
 
-    //updateSigChart(state.data, id);
-    updateSigChart(mergedData);
-    
     // oldStimValue = currentStimValue;
     return edaDelta;
 }

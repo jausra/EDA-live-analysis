@@ -25,7 +25,7 @@ function getPValue(zScores) {
     return zScores.map(z => ( 1 - jStat.normal.cdf(z, 0, 1) ));
 }
 
-export function analyze(data) {
+export function analyzeAll(data) {
     //calculate average and standard deviation for individual stimuli
     Object.entries(data).forEach(([label, obj]) => {
         if (obj && obj.datapoints){
@@ -72,6 +72,85 @@ export function analyze(data) {
             }
         })
     }
+
+    return data;
+}
+
+export function analyzeRounds(data, startRound, stopRound) {
+    //calculate average and standard deviation for individual stimuli
+    const allValues = []
+    Object.entries(data).forEach(([label, obj]) => {
+        if (!obj.datapoints || !obj.rounds) return;
+        if (!obj.avg) {
+            obj.avg = [];
+        }
+        const vals = obj.datapoints.filter((_, i) => obj.rounds[i] >= startRound && obj.rounds[i] <= stopRound);
+        const avg = vals.length ? getAvg(vals) : null;
+        obj.avg.push(avg);
+
+        if (!obj.stdDev) {
+            obj.stdDev = [];
+        }
+        const stdDev = vals.length ? getStdDev(vals) : null;
+        obj.stdDev.push(stdDev);
+
+        allValues.push(...vals);
+    });
+
+    if ( allValues.length > 1) {
+        if (!data.grandMean) {
+            data.grandMean = [];
+        }
+        const grandMean = getAvg(allValues);
+        data.grandMean.push(grandMean);
+
+        if (!data.grandStdDev) {
+            data.grandStdDev = [];
+        }
+        const grandStdDev = getStdDev(allValues);
+        data.grandStdDev.push(grandStdDev);
+
+        Object.entries(data).forEach(([label, obj]) => {
+            if (!obj.datapoints || !obj.rounds) return;
+            if (!obj.avg) {
+                obj.avg = [];
+            }
+            const vals = obj.datapoints.filter((_, i) => obj.rounds[i] >= startRound && obj.rounds[i] <= stopRound);
+            
+            // if (!obj.zScores) {
+            //     obj.zScores = [];
+            // }
+            const zScores = getZScore(vals, grandMean, grandStdDev);
+            // obj.zScores.push(zScores);
+
+            if (!obj.avgZScore) {
+                obj.avgZScore = [];
+            }
+            const avgZScore = getAvg(zScores);
+            obj.avgZScore.push(avgZScore);
+
+            // if (!obj.pValues) {
+            //     obj.pValues = [];
+            // }
+            const pValues = getPValue(zScores);
+            // obj.pValues.push(pValues);
+
+            if (!obj.avgPValue) {
+                obj.avgPValue = [];
+            }
+            const avgPValue = getAvg(pValues);
+            //Use "1 - avgPValue" for reading the significance graph easier
+            //obj.avgPValue.push(avgPValue);
+            obj.avgPValue.push(1 - avgPValue);
+        });
+    }
+
+    if (!data.windowTimes) {
+        data.windowTimes = [];
+    }
+    const windowRoundTimes = data.roundTimes.slice(startRound, stopRound +1);
+    const avgWindowRoundTime = getAvg(windowRoundTimes);
+    data.windowTimes.push(avgWindowRoundTime);
 
     return data;
 }
