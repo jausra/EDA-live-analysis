@@ -20,7 +20,7 @@
         </header>
         <main>
             <div id="container">
-                <div id="stimControlContainer">
+                <div id="leftModal">
                     <div id="stimControl">
                         <div id="stimPanel">
                             <div id="connContainer">
@@ -82,10 +82,9 @@
                             </button>
                         </div>
                     </div>
-                    <button id="stimControlToggleButton">&#9664;</button>
+                    <button id="leftModalButton">&#9664;</button>
                 </div>
-                <div id="stimDisplayContainerWrapper">
-                    
+                <div id="centralModalWrapper">
                     <div id="stimDisplayContainer">
                         <div id="calContainer" class="hiddenFlex">
                             <div id="calDisplay">
@@ -96,7 +95,7 @@
                                         <span class="calInputUnit">kΩ</span>
                                     </div>
                                 </div>
-                                <input type="range" class="slider" id="calOffsetSlider">
+                                <input type="range" class="calSlider" id="calOffsetSlider">
                                 <div class="horFlex">
                                     <p class="calTitle">Gain Resistance:</p>
                                     <div class="calInput">
@@ -104,16 +103,16 @@
                                         <span class="calInputUnit">kΩ</span>
                                     </div>
                                 </div>
-                                <input type="range" class="slider" id="calGainSlider">
+                                <input type="range" class="calSlider" id="calGainSlider">
                                 <button id="calSubmitButton">Submit</button>
                                 <button id="calStartButton">Start</button>
                             </div>
                         </div>
                         <div id="stimDisplay"></div>
-                        <canvas id="stimCountdown" width="500" height="500"></canvas>
+                        <canvas id="stimRadialGauge" width="500" height="500"></canvas>
                     </div>
                 </div>
-                <div id="resultContainer" class="collapsed">
+                <div id="rightModal" class="collapsed">
                     <div id="result">
                         <div id="serialChartContainer">
                             <canvas id="serialChart" width="500px"></canvas>
@@ -123,8 +122,19 @@
                             <!-- <canvas id="sigBarChart"></canvas> -->
                             <canvas id="sigLineChart"></canvas>
                         </div>
+                        <div class="sigHorFlex">
+                            <p class="sigParam">Significance Window (Rounds):</p>
+                            <p class="sigParam" id="sigLineWindowText"></p>
+                        </div>
+                        <input type="range" class="sigSlider" id="sigLineWindowSlider">
+                        <div class="sigHorFlex">
+                            <p class="sigParam">Significance Overlap:</p>
+                            <p class="sigParam" id="sigLineOverlapText"></p>
+                        </div>
+                        <input type="range" class="sigSlider" id="sigLineOverlapSlider">
+                        <button id="sigLineSubmitButton">Submit</button>
                     </div>
-                    <button id="resultToggleButton">&#9664;</button>
+                    <button id="rightModalButton">&#9664;</button>
                 </div>
             </div>
         </main>

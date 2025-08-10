@@ -1,10 +1,10 @@
-import { colorMap } from "./utils.js";
+import { colorMap } from "../utils.js";
 
 export default class CreateStimDisplay{
 
-    constructor(displayTarget, countdownTarget, compressedStimObject) {
-        this.displayTarget = displayTarget;
-        this.countdownTarget = countdownTarget;
+    constructor(displayTarget, radialGaugeTarget, compressedStimObject) {
+        this.displayTarget = displayTarget; //Word or drawing target. 
+        this.radialGaugeTarget = radialGaugeTarget; //Radial gauge target. 
         this.index = 0;
         this.round = 1;
         this.previousLastValue = -1;
@@ -14,10 +14,12 @@ export default class CreateStimDisplay{
         this.timeoutID = null;
         this.animationID = null;
 
+        //Vairables to store the expanded array of stim after factoring in ratios. 
         this.expandedType = [];
         this.expandedValue = [];
         this.expandedTime = [];
 
+        //Variables to store the initial order of the stims
         this.ogExpandedType = [];
         this.ogExpandedValue = [];
         this.ogExpandedTime = [];
@@ -27,6 +29,7 @@ export default class CreateStimDisplay{
         this.currentEDAValues = [];
     }
 
+    //Method to start the stim display. 
     start() {
         this.expandedType = [];
         this.expandedValue = [];
@@ -45,6 +48,7 @@ export default class CreateStimDisplay{
         this.scheduleNext();
     }
 
+    //Method to multiply stimulus items if their ratio is > 1. 
     expandValues() {
         for (let i = 0; i < this.compressedStimObject.stimValue.length; i++){
             const repeat = this.compressedStimObject.stimRatio[i];
@@ -56,6 +60,7 @@ export default class CreateStimDisplay{
         }
     }
 
+    //Method to randomize the order of the stims. 
     randomizeValues() {
         let shuffledIndices = this.shuffleIndices(this.expandedValue.length);
         this.expandedType = this.applyShuffledIndices(this.ogExpandedType, shuffledIndices);
@@ -63,7 +68,10 @@ export default class CreateStimDisplay{
         this.expandedTime = this.applyShuffledIndices(this.ogExpandedTime, shuffledIndices);
     }
 
+    //Method to create an array of random indices. 
     shuffleIndices(length) {
+        //Here, the first argument is an object with a length key. 
+        // The second argument is a mapping function, where the index of each value becomes the value in the final array. 
         const indices = Array.from({ length }, (_, i) => i);
         let currentIndex = length;
         while (currentIndex != 0){
@@ -74,21 +82,24 @@ export default class CreateStimDisplay{
             [indices[randomIndex], indices[currentIndex]];
         }
 
+        //If the first stim is the same as the previous last stim, swap the first and the second stim. 
         if(indices[0] === this.previousLastValue){
             [indices[0], indices[1]] = 
             [indices[1], indices[0]];
         }
-
         this.previousLastValue = indices[length-1];
 
         return indices;
     }
 
+    //Method to change the order of an array based on another array of shuffled indices. 
     applyShuffledIndices(originalArray, shuffledIndices) {
         return shuffledIndices.map((i) => originalArray[i]);
     }
 
+    //Method to change the stim after some period of time. 
     scheduleNext() {
+        //setTimeout schedules a callback function to run AFTER a set delay. 
         this.timeoutID = setTimeout(() => {
             if(!this.running) return;
             this.advance();
@@ -96,6 +107,7 @@ export default class CreateStimDisplay{
         }, this.expandedTime[this.index]);
     }
 
+    //This method resets 'this.timeoutID', so that when original stim cycle finishes, the next stim is not shown. 
     pause() {
         if (this.timeoutID) {
             clearInterval(this.timeoutID);
@@ -103,20 +115,23 @@ export default class CreateStimDisplay{
         }
     }
 
+    //Method to resume the stim display.
     resume() {
         this.showCurrent();
         this.scheduleNext();
     }
 
+    //Method to reset 'this.timeoutID', and clear the radial gauge
     stop() {
         if (this.timeoutID) {
             clearInterval(this.timeoutID);
             this.timeoutID = null;
         }
         this.displayTarget.innerHTML = '';
-        this.clearCountdown(this.countdownTarget);
+        this.clearRadialGauge(this.radialGaugeTarget);
     }
 
+    //Method to advance the index and round, the run 'this.showCurrent'. 
     advance() {
         this.index = this.index + 1;
         if (this.index === this.expandedValue.length){
@@ -129,18 +144,22 @@ export default class CreateStimDisplay{
         this.showCurrent();
     }
 
+    //Method to show the current stim. 
     showCurrent() {
         const type = this.expandedType[this.index];
         const value = this.expandedValue[this.index];
 
+        //Get the start and stop time indicating when the gauge is empty vs full. 
         const startTime = Date.now();
         const duration = this.expandedTime[this.index];
         const stopTime = startTime + duration;
 
-        this.displayTarget.innerHTML = '';
+        this.displayTarget.innerHTML = ''; //Clear the stim previously displayed. 
 
         if(type === 'Word') {
             this.displayTarget.textContent = value;
+
+            //If the word is wider than the available space, scale down its size. 
             const wordWidth = this.displayTarget.scrollWidth;
             const containerWidth = this.displayTarget.clientWidth;
             if (wordWidth > 0.8*containerWidth) {
@@ -148,6 +167,7 @@ export default class CreateStimDisplay{
                 this.displayTarget.style.transform = `translate(-50%, -50%) scale(${scale})`;
             }
 
+            //Run the callback functions with the stim information. This will be displayed in the serial chart. 
             this.stimDisplayListeners.forEach(cb => cb({
                 stim: value,
                 round: this.round,
@@ -170,18 +190,21 @@ export default class CreateStimDisplay{
             }
             this.displayTarget.appendChild(drawing);
 
+            //Run the callback functions with the stim information. This will be displayed in the serial chart. 
             this.stimDisplayListeners.forEach(cb => cb({
                 stim: `${value.color}\n${value.shape}`,
                 round: this.round,
-                color: colorMap[value.color],
+                color: colorMap[value.color], //Use the colorMap (utils.js) to get the rgba from string. 
                 startTime,
                 stopTime
             }));
         }
-        this.drawCountdown(this.countdownTarget, this.expandedTime[this.index]);
+        //Once the stim word/drawing has been displayed, cycle the radial gauge from empty to full over the duration. 
+        this.drawRadialGauge(this.radialGaugeTarget, this.expandedTime[this.index]);
     }
 
-    drawCountdown(canvas, duration) {
+    //Method to incrementally fill out the radial gauge from 0 to 360 degrees. 
+    drawRadialGauge(canvas, duration) {
         const self = this;
         const ctx = canvas.getContext("2d");
         const centerX = canvas.width / 2;
@@ -200,12 +223,14 @@ export default class CreateStimDisplay{
     
             ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+            //Draw the background circle
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
             ctx.strokeStyle = "#ddd";
             ctx.lineWidth = 15;
             ctx.stroke();
     
+            //Draw the fill circle in increments. 
             ctx.beginPath();
             ctx.arc(centerX, centerY, radius, startAngle, endAngle);
             ctx.strokeStyle = "#00aaff";
@@ -220,7 +245,8 @@ export default class CreateStimDisplay{
         self.animationID = requestAnimationFrame(drawFrame);
     }
 
-    clearCountdown(canvas) {
+    //Method to clear the radial gauge. 
+    clearRadialGauge(canvas) {
         if (this.animationID !== null){
             cancelAnimationFrame(this.animationID);
             this.animationID = null;
@@ -230,6 +256,7 @@ export default class CreateStimDisplay{
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
 
+    //Method to add a callback to 'this.stimDisplayListeners'
     onStimDisplay(callback){
         this.stimDisplayListeners.push(callback);
     }

@@ -1,3 +1,4 @@
+//Color options to be associated with unique stims. 
 const ogColorOptions = [
     "rgba(255, 0, 0, 0.2)",       // red
     "rgba(0, 255, 0, 0.2)",       // green
@@ -21,18 +22,21 @@ const ogColorOptions = [
     "rgba(75, 0, 130, 0.2)"       // indigo
 ];
 
+//Copy it. 
 let colorOptions = [...ogColorOptions];
 
+//Function to generate a random color from colorOptions.
 export function randomColor() {
     if (colorOptions.length === 0) resetColorOptions();
     return colorOptions.splice(Math.floor(colorOptions.length*Math.random()), 1)[0];
 }
 
+//Function to reset the color options to the originals. 
 export function resetColorOptions() {
     colorOptions = [...ogColorOptions];
 }
 
-
+//A color map object. 
 export const colorMap = {
     'Red': 'rgba(255, 0, 0, 0.2)',
     'Blue': 'rgba(0, 0, 255, 0.2)',

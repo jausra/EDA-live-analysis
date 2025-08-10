@@ -38,7 +38,7 @@ header h1 {
     height: 100%;
 }
 
-#stimControlContainer {
+#leftModal {
     background-color: #558ec0;
     border-radius: 20px;
     margin: 20px;
@@ -52,7 +52,7 @@ header h1 {
     transition: width 0.5s linear;
 }
 
-#stimControlContainer.collapsed {
+#leftModal.collapsed {
     width: 30px;
 }
 
@@ -246,7 +246,7 @@ header h1 {
     line-height: 30px;
 }
 
-.addStimButton {
+#addStimButton {
     font-size: 24px;
     font-weight: 500;
     padding: 5px 12px;
@@ -389,11 +389,11 @@ header h1 {
     font-size: 20px;
 }
 
-#stimControlContainer.collapsed #stimControl{
+#leftModal.collapsed #stimControl{
     opacity: 0;
 }
 
-#stimControlToggleButton {
+#leftModalButton {
     position: absolute;
     top: 50%;
     left: 100%;
@@ -404,7 +404,7 @@ header h1 {
     z-index: 1;
 }
 
-#stimDisplayContainerWrapper {
+#centralModalWrapper {
     flex: 1;
     margin: 20px;
     display: flex;
@@ -423,7 +423,7 @@ header h1 {
     transition: width 0.5s linear;
 }
 
-#stimDisplayContainerWrapper.shifted #stimDisplayContainer{
+#centralModalWrapper.shifted #stimDisplayContainer{
     width: 50%;
 }
 
@@ -470,7 +470,7 @@ header h1 {
     font-weight: 900;
 }
 
-.slider {
+.calSlider {
     width: 100%;
     margin: 0 10px 0 0;
     /* border: solid red; */
@@ -520,7 +520,7 @@ header h1 {
     font-weight: 900;
 }
 
-#stimCountdown {
+#stimRadialGauge {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -529,7 +529,7 @@ header h1 {
     width: 500px;
 }
 
-#resultContainer {
+#rightModal {
     background-color: #558ec0;
     border-radius: 20px;
     margin: 20px;
@@ -544,11 +544,11 @@ header h1 {
     transition: width 0.5s linear;
 }
 
-#resultContainer.collapsed {
+#rightModal.collapsed {
     width: 30px;
 }
 
-#resultToggleButton {
+#rightModalButton {
     position: absolute;
     top: 50%;
     left: 0%;
@@ -570,7 +570,7 @@ header h1 {
     position: relative;
 }
 
-#resultContainer.collapsed #result{
+#rightModal.collapsed #result{
     opacity: 0;
 }
 
@@ -584,8 +584,8 @@ header h1 {
 }
 
 #resetZoomButton {
-    margin-top: 30px;
-    margin-bottom: 30px;
+    margin-top: 20px;
+    margin-bottom: 20px;
     padding: 15px 25px;
     background-color: #f5f5f5;
     border-radius: 15px;
@@ -608,4 +608,31 @@ header h1 {
     background-color: #f5f5f5;
     border-radius: 15px;
     padding: 20px 10px -10px 20px;
+}
+
+.sigSlider {
+    width: 90%;
+}
+
+#sigLineSubmitButton {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    padding: 15px 25px;
+    background-color: #f5f5f5;
+    border-radius: 15px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.sigHorFlex {
+    display: flex;
+    justify-content: space-between;
+    margin: 30px 0 0 0;
+    width: 90%;
+}
+
+.sigParam{
+    font-size: 20px;
+    font-weight: 900;
 }
