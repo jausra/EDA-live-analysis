@@ -87,7 +87,7 @@ export default class StimManager {
         this.addStimButton.classList.toggle('hidden', !allValid);
     }
 
-    //Method to toggle the randomness of 
+    //Method to toggle the randomness of stim items. 
     toggleRandomness() {
         if (this.stimObject.stimOrder === 'random') {
             this.stimObject.stimOrder = 'ordered';
@@ -106,7 +106,9 @@ export default class StimManager {
         }
     }
 
+    //Method to take the values in the dropdowns/ text inputs and create a new stim item based on them. 
     addStim() {
+        //Get the values from the dropdowns/text inputs
         const type = this.stimTypeSelector.value;
         let value;
         
@@ -121,10 +123,10 @@ export default class StimManager {
 
         const ratio = this.stimRatioSelector.value;
         const time = 1000 * parseFloat(this.stimTimeSelector.value);
-
-        this.stimObject.addStim(type, value, ratio, time);
         
-        // Enable calibrate button when stims are added
+        this.stimObject.addStim(type, value, ratio, time); //Add the stim item to the stimObject. 
+        
+        //Enable calibrate button when stims are added.
         const calibrateButton = document.getElementById('calibrateButton');
         if (calibrateButton) {
             calibrateButton.disabled = false;
@@ -133,132 +135,134 @@ export default class StimManager {
         this.renderStimItemContainer();
     }
 
+    //Method to add visualizers of each stim item to 'stimItemContainer'.
     renderStimItemContainer() {
-        this.stimItemContainer.innerHTML = '';
+        this.stimItemContainer.innerHTML = ''; //Clear the 'stimItemContainer'. 
 
-        for (let i = 0; i < this.stimObject.stimType.length; i++) {
+        for (let i = 0; i < this.stimObject.stimType.length; i++) { //Cycle through each stim item in 'stimObject'. 
             let stimItem = document.createElement('div');
             stimItem.style.textAlign = 'center';
-            stimItem.classList.add('stimItem');
-            stimItem.dataset.index = i;
+            stimItem.classList.add('stimItem'); //Style the 'stimItem'
+            stimItem.dataset.index = i; //Adds index metadata to the DOM element. 
 
             if (this.stimObject.stimType[i] === 'Word') {
-                const word = document.createElement('div');
-                word.textContent = this.stimObject.stimValue[i];
-                word.classList.add('stimItemValue');
-                stimItem.appendChild(word);
+                const word = document.createElement('div'); //Create the element inside the 'stimItem' div.
+                word.textContent = this.stimObject.stimValue[i]; //Add the text. 
+                word.classList.add('stimItemValue'); //Center the word in the 'stimItem' div. 
+                stimItem.appendChild(word); //Add the 'word' to the 'stimItem'.
 
-                this.stimItemContainer.appendChild(stimItem);
+                this.stimItemContainer.appendChild(stimItem); //Add the 'stimItem' to the stimItemContainer'.
 
-                // Handle word scaling
-                this.scaleWordIfNeeded(stimItem, word);
-
+                this.scaleWordIfNeeded(stimItem, word); //Scale the word if it is too wide. 
             } else if (this.stimObject.stimType[i] === 'Drawing') {
-                const drawing = document.createElement('div');
-                drawing.style.width = '100px';
-                drawing.style.height = '100px';
-                drawing.style.backgroundColor = this.stimObject.stimValue[i].color;
-                drawing.classList.add('stimItemValue');
+                const drawing = document.createElement('div'); //Create the element inside the 'stimItem' div.
+                drawing.style.width = '100px'; //Set x-width
+                drawing.style.height = '100px'; //Set y-width
+                drawing.style.backgroundColor = this.stimObject.stimValue[i].color; //Give the shape color. 
+                drawing.classList.add('stimItemValue'); //Center the drawing in the 'stimItem' div. 
 
-                if (this.stimObject.stimValue[i].shape === 'Circle') {
+                if (this.stimObject.stimValue[i].shape === 'Circle') { //Create circle.
                     drawing.style.borderRadius = '50%';
-                } else if (this.stimObject.stimValue[i].shape === 'Square') {
+                } else if (this.stimObject.stimValue[i].shape === 'Square') { //Create square.
                     drawing.style.borderRadius = '0%';
                 }
-                stimItem.appendChild(drawing);
-                this.stimItemContainer.appendChild(stimItem);
+                stimItem.appendChild(drawing); //Add the 'drawing' to the 'stimItem'.
+                this.stimItemContainer.appendChild(stimItem); //Add the 'stimItem' to the stimItemContainer'.
             }
-
-            // Add time display
-            this.addTimeDisplay(stimItem, i);
             
-            // Add ratio display
-            if (this.stimObject.stimRatio[i] > 1) {
+            this.addTimeDisplay(stimItem, i); //Add time display to the 'stimItem'. 
+            
+            if (this.stimObject.stimRatio[i] > 1) { //Add ratio display to the 'stimItem'. 
                 this.addRatioDisplay(stimItem, i);
             }
 
-            // Add order input
-            this.addOrderInput(stimItem, i);
+            this.addOrderInput(stimItem, i); //Add order input to the 'stimItem'. 
 
-            // Add delete button
-            this.addDeleteButton(stimItem, i);
+            this.addDeleteButton(stimItem, i); //Add delete button to the 'stimItem'. 
         }
     }
 
+    //Function to scale the word inside the stimItem if it is too large. 
     scaleWordIfNeeded(stimItem, word) {
         // Scale width if needed
-        const stimItemWidth = stimItem.clientWidth;
-        const wordWidth = word.scrollWidth;
-        if (wordWidth > (0.9 * stimItemWidth)) {
-            const scale = (0.9 * stimItemWidth) / wordWidth;
+        const stimItemWidth = stimItem.clientWidth; //Get the 'stimItem' width. 
+        const wordWidth = word.scrollWidth; //Get the 'word' width. 
+        if (wordWidth > (0.9 * stimItemWidth)) { //Check if 'word' width is greater than 'stimItem' width x0.9. 
+            //Scale accordingly.
+            const scale = (0.9 * stimItemWidth) / wordWidth; 
             word.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
 
         // Scale height if needed
-        const stimItemHeight = stimItem.clientHeight;
-        const wordHeight = word.scrollHeight;
-        if (wordHeight > (0.6 * stimItemHeight)) {
+        const stimItemHeight = stimItem.clientHeight; //Get the 'stimItem' height. 
+        const wordHeight = word.scrollHeight; //Get the 'word' height. 
+        if (wordHeight > (0.6 * stimItemHeight)) { //Check if 'word' height is greater than 'stimItem' height x0.6. 
+            //Scale accordingly.
             const scale = (0.6 * stimItemHeight) / wordHeight;
             word.style.transform = `translate(-50%, -50%) scale(${scale})`;
         }
     }
 
+    //Method to add display showing how long the stim is running for. 
     addTimeDisplay(stimItem, index) {
-        const displayTime = document.createElement('div');
-        displayTime.textContent = `${this.stimObject.stimTime[index] / 1000} s`;
-        displayTime.classList.add('stimItemTime');
-        stimItem.appendChild(displayTime);
+        const displayTime = document.createElement('div'); //Create a new div. 
+        displayTime.textContent = `${this.stimObject.stimTime[index] / 1000} s`; //Add the time as text. 
+        displayTime.classList.add('stimItemTime'); //Style the div. 
+        stimItem.appendChild(displayTime); //Add 'displayTime' to 'stimItem'. 
     }
 
+    //Method to add display showing the ratio of the stim. 
     addRatioDisplay(stimItem, index) {
-        const displayRatio = document.createElement('div');
-        displayRatio.textContent = `${this.stimObject.stimRatio[index]}x`;
-        displayRatio.classList.add('stimItemRatio');
-        stimItem.appendChild(displayRatio);
+        const displayRatio = document.createElement('div'); //Create a new div. 
+        displayRatio.textContent = `${this.stimObject.stimRatio[index]}x`; //Add the ratio as text. 
+        displayRatio.classList.add('stimItemRatio'); //Style the div. 
+        stimItem.appendChild(displayRatio); //Add 'displayRatio' to 'stimItem'. 
     }
 
     addOrderInput(stimItem, index) {
-        const displayOrder = document.createElement('input');
+        const displayOrder = document.createElement('input'); //Create a new text input. 
         displayOrder.type = 'text';
-        displayOrder.value = `${index + 1}`;
-        displayOrder.classList.add('stimItemOrder');
+        displayOrder.value = `${index + 1}`; //Add the initial order as the default input text. 
+        displayOrder.classList.add('stimItemOrder'); //Style the input. 
         
-        if (this.stimObject.stimOrder === 'random') {
+        if (this.stimObject.stimOrder === 'random') { //Hide the order if it is random. 
             displayOrder.classList.add('hidden');
         }
 
-        displayOrder.addEventListener("change", () => {
-            this.handleOrderChange(index, displayOrder.value);
+        displayOrder.addEventListener("change", () => { //Monitor for changes in the order. 
+            this.handleOrderChange(index, displayOrder.value); 
         });
 
-        stimItem.appendChild(displayOrder);
+        stimItem.appendChild(displayOrder); //Add 'displayOrder' to 'stimItem'. 
     }
 
+    //Method to handle changes in the stim item order. 
     handleOrderChange(index, newOrder) {
         const order = parseInt(newOrder);
         if (!isNaN(order) && order > 0) {
             Object.entries(this.stimObject).forEach(([key, value]) => {
                 if (key !== 'stimOrder') {
-                    if (order > this.stimObject.stimType.length) {
-                        const [item] = this.stimObject[key].splice(index, 1);
-                        this.stimObject[key].push(item);
-                    } else {
+                    if (order > this.stimObject.stimType.length) { //Ensure that all other stimObject properties get re=ordered correctly. 
+                        const [item] = this.stimObject[key].splice(index, 1); //Get the stimObject attribute in the new order. 
+                        this.stimObject[key].push(item); //Push it back into stimObject. 
+                    } else { //Swap the stim items based on the order you input. 
                         [this.stimObject[key][index], this.stimObject[key][order - 1]] = 
                         [this.stimObject[key][order - 1], this.stimObject[key][index]];
                     }
                 }
             });
         }
-        this.renderStimItemContainer();
+        this.renderStimItemContainer(); //Render the stimItemContainer. 
     }
 
+    //Method to add a delete button to each stim item. 
     addDeleteButton(stimItem, index) {
-        const deleteStimItemButton = document.createElement('button');
-        deleteStimItemButton.classList.add('deleteStimButton', 'fa-solid', 'fa-trash');
+        const deleteStimItemButton = document.createElement('button'); //Create the button
+        deleteStimItemButton.classList.add('deleteStimButton', 'fa-solid', 'fa-trash'); //Add styling. 
         deleteStimItemButton.addEventListener("click", () => {
-            this.stimObject.removeStim(index);
+            this.stimObject.removeStim(index); //Remove the stim item upon delete .
             
-            // If all stim items have been cleared, disable the calibrate button
+            //If all stim items have been cleared, disable the calibrate button.
             if (!this.stimObject.hasItems()) {
                 const calibrateButton = document.getElementById('calibrateButton');
                 if (calibrateButton) {
@@ -266,12 +270,13 @@ export default class StimManager {
                 }
             }
             
-            this.renderStimItemContainer();
+            this.renderStimItemContainer(); //Render the stimItemContainer. 
         });
-        stimItem.appendChild(deleteStimItemButton);
+        stimItem.appendChild(deleteStimItemButton); //Add the delete button to the 'stimItem'. 
     }
 
-    clearStimItems() {
+    //Method to reset all stim items. 
+    clearStimItems() { 
         this.stimItemContainer.innerHTML = '';
         this.stimObject.clear();
         this.stimTypeSelector.value = "";
@@ -281,6 +286,7 @@ export default class StimManager {
         this.checkForValidInputs();
     }
 
+    //Method to disable and enable custom stim modifiers. 
     toggleStimControlDisable(isDisabled) {
         const controls = [
             this.stimRandomizerButton,
@@ -297,7 +303,7 @@ export default class StimManager {
             if (control) control.disabled = isDisabled;
         });
 
-        // Handle delete buttons and order inputs
+        //Handle delete buttons and order inputs.
         document.querySelectorAll('.deleteStimButton').forEach(button => {
             button.disabled = isDisabled;
         });

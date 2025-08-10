@@ -1,9 +1,10 @@
+//Class to create stim presets. 
 export default class StimPresets {
     constructor(stimObject) {
         this.stimObject = stimObject;
     }
 
-    // Debug game preset
+    //Add debug game preset. 
     addDebugStim() {
         this.stimObject.clear();
         this.stimObject.stimOrder = 'random';
@@ -13,7 +14,7 @@ export default class StimPresets {
         this.stimObject.addStim('Word', 'c', 1, 1000);
     }
 
-    // Breathing game preset
+    //Add breathing game preset.
     addBreathingGameStim() {
         this.stimObject.clear();
         this.stimObject.stimOrder = 'ordered';
@@ -22,7 +23,7 @@ export default class StimPresets {
         this.stimObject.addStim('Word', 'Normal Breathing', 3, 10000);
     }
 
-    // Red dot game preset
+    //Add red dot game preset.
     addRedDotGameStim() {
         this.stimObject.clear();
         this.stimObject.stimOrder = 'random';
@@ -38,7 +39,7 @@ export default class StimPresets {
         }, 4, 9000);
     }
 
-    // Get all available preset names
+    //Get all available preset names.
     getPresetNames() {
         return [
             'Debug',
@@ -47,7 +48,7 @@ export default class StimPresets {
         ];
     }
 
-    // Apply preset by name
+    //Apply preset by name.
     applyPreset(presetName) {
         switch (presetName) {
             case 'Debug':
@@ -64,7 +65,7 @@ export default class StimPresets {
         }
     }
 
-    // Check if current stim object matches a preset
+    //Check if current stim object matches a preset.
     matchesPreset(presetName) {
         const currentStim = this.stimObject;
         

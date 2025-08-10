@@ -2,24 +2,25 @@ import CreateStimObject from './stimBackend/stimObject.js';
 import StimManager from './stimBackend/stimManager.js';
 import StimPresets from './stimBackend/stimPresets.js';
 import CreateStimDisplay from './stimFrontend/stimDisplay.js';
-import { connectPort, disconnectPort, startSerial, stopSerial, resumeSerial, serialWrite } from './recordBackend/serialReader.js'; 
+import { startSerial, stopSerial, resumeSerial, serialWrite } from './recordBackend/serialReader.js'; 
 import { initSerialChart, updateSerialChart, setAutoscroll, annotateChartWithStim, annotateChartWithDelta, clearSerialChart } from './recordFrontend/serialChart.js';
 import { resetColorOptions } from './utils.js';
 import { analyzeAll, analyzeRounds } from './recordBackend/stats.js';
 import { initSigBarChart, updateSigBarChart, clearSigBarChart } from './recordFrontend/significanceBarChart.js';
 import { initSigLineChart, updateSigLineChart, clearSigLineChart } from './recordFrontend/significanceLineChart.js';
 import { showCentralModal } from './modals.js';
+import { ConnectionManager } from './recordBackend/connectionManager.js';
 
-//Create a stim object with a random order.
+//Record Backend. 
+const connectionManager = new ConnectionManager();
+
+//Stim Backend. 
 const stimObject = new CreateStimObject('random');
-
-//Initialize stim manager and presets.
 const stimManager = new StimManager(stimObject);
 const stimPresets = new StimPresets(stimObject);
 
 const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
 const saveDataButton = document.getElementById("saveDataButton");
-
 function toggleStimControlDisable(isDisabled) {
     stimPauseResumeButton.disabled = !isDisabled;
     saveDataButton.disabled = isDisabled;
@@ -29,78 +30,11 @@ function toggleStimControlDisable(isDisabled) {
 
 //////////////////General Stimulation Control//////////////////
 
-const connBox1 = document.getElementById("connBox1");
-connBox1.addEventListener("click", async (e) => {
-    const portID = 'sensor1';
-    if (e.target.classList.contains('connected')) {
-        disconnectPort(portID);
-        cancelPortState(portID);
-        e.target.innerHTML = "+";
-        e.target.classList.remove('connected');
-    } else {
-        try{
-            const port = await connectPort(portID);
-            const portState = ensurePortState(portID);
-            if (port) {
-                e.target.innerHTML = "&#8644;";
-                e.target.classList.add('connected');
-            }
-        } catch {
-            console.log("Serial port did not connect");
-        }
-    }
-    updateGameButtonClickability();
-});
-connBox1.addEventListener("mouseenter", (e) => {
-    if (e.target.classList.contains("connected")) {
-        e.target.innerHTML = '&#10005';
-    }
-});
-connBox1.addEventListener("mouseleave", (e) => {
-    if (e.target.classList.contains("connected")) {
-        e.target.innerHTML = "&#8644;";
-    }
-});
-
-const connBox2 = document.getElementById("connBox2");
-connBox2.addEventListener("click", async (e) => {
-    const portID = 'sensor2';
-    if (e.target.classList.contains('connected')) {
-        disconnectPort(portID);
-        cancelPortState(portID);
-        e.target.innerHTML = "+";
-        e.target.classList.remove('connected');
-    } else {
-        try{
-            const port = await connectPort(portID);
-            const portState = ensurePortState(portID);
-            if (port) {
-                e.target.innerHTML = "&#8644;";
-                e.target.classList.add('connected');
-            }
-        } catch {
-            console.log("Serial port did not connect");
-        }
-    }
-    updateGameButtonClickability();
-});
-connBox2.addEventListener("mouseenter", (e) => {
-    if (e.target.classList.contains("connected")) {
-        e.target.innerHTML = '&#10005';
-    }
-});
-connBox2.addEventListener("mouseleave", (e) => {
-    if (e.target.classList.contains("connected")) {
-        e.target.innerHTML = "&#8644;";
-    }
-});
-
 const calibrateButton = document.getElementById("calibrateButton");
 const stimStartStopButton = document.getElementById("stimStartStopButton");
 const gameTitleContainer = document.getElementById("gameTitleContainer");
 const backButton = document.getElementById("backButton");
 const gameContainer = document.getElementById("gameContainer");
-const gameButtons = document.querySelectorAll(".gameButton");
 const connContainer = document.getElementById("connContainer");
 const gameTitle = document.getElementById("gameTitle");
 function toggleHideGameButtons() {
@@ -199,11 +133,11 @@ calibrateButton.addEventListener("click", async () => {
         calibrateButton.disabled = true;
         calContainer.classList.toggle("hiddenFlex", false);
 
-        for (const [id, state] of portStates.entries()) {
-            resetEDAValues(id);
+        for (const [id, state] of connectionManager.getPortStates().entries()) {
+            connectionManager.resetEDAValues(id);
             clearSerialChart(id);
         }
-        for (const [id, state] of portStates.entries()) {
+        for (const [id, state] of connectionManager.getPortStates().entries()) {
             await startSerial(id, updateSerialChart);
         }
     } catch {
@@ -340,7 +274,7 @@ async function startSession() {
         stimStartStopButton.disabled = false;
         stimStartStopButton.textContent = "Stop";
         //await startSerial(portID, updateInterface); //problem
-        for (const [id, state] of portStates.entries()) {
+        for (const [id, state] of connectionManager.getPortStates().entries()) {
             await startSerial(id, updateInterface);
         }
         stimDisplay.start();
@@ -362,7 +296,7 @@ stimStartStopButton.addEventListener("click", async (e) => {
         startSession();
     } else {
         //stopSerial(portID);
-        for (const [id, state] of portStates.entries()) {
+        for (const [id, state] of connectionManager.getPortStates().entries()) {
             stopSerial(id);
             state.stimEDAValues = [];
             state.stimEDATime = [];
@@ -386,8 +320,8 @@ stimPauseResumeButton.addEventListener("click", async (e) => {
 
             await showInitialCountdown();
             //await resumeSerial(portID, updateInterface);
-            console.log("portStates.entries():", portStates.entries())
-            for (const [id, state] of portStates.entries()) {
+            console.log("portStates.entries():", connectionManager.getPortStates().entries())
+            for (const [id, state] of connectionManager.getPortStates().entries()) {
                 state.stimEDAValues = [];
                 state.stimEDATime = [];
                 await resumeSerial(id, updateInterface);
@@ -401,7 +335,7 @@ stimPauseResumeButton.addEventListener("click", async (e) => {
         }
     } else {
         //stopSerial(portID);
-        for (const [id, state] of portStates.entries()) {
+        for (const [id, state] of connectionManager.getPortStates().entries()) {
             //stopSerial(id);
             await stopSerial(id);
             state.stimEDAValues = [];
@@ -456,7 +390,7 @@ saveDataButton.addEventListener("click", async () => {
     const sessionFolder = await rootFolder.getDirectoryHandle(sessionStartTime, { create: true });
     
     const csvHeaders = generateCSVHeaders();
-    for (const [id, state] of portStates.entries()) {
+    for (const [id, state] of connectionManager.getPortStates().entries()) {
         const csvName = `${sessionStartTime}_${id}.csv`;
         const csvFile = await sessionFolder.getFileHandle(csvName, { create: true });
         const writable = await csvFile.createWritable();
@@ -530,16 +464,16 @@ stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
         previousRoundStopTime = startTime;
         if (round > 1) {
             previousRoundAverageTime = (previousRoundStopTime - previousRoundStartTime)/2 + previousRoundStartTime;
-            for (const [id, state] of portStates.entries()) {
-                if (!state.data) {
-                    state.data = {};
-                }
-                if (!state.data.roundTimes) {
-                    state.data.roundTimes = [];
-                }
-                state.data.roundTimes.push(previousRoundAverageTime);
-                // console.log(state.data);
+                    for (const [id, state] of connectionManager.getPortStates().entries()) {
+            if (!state.data) {
+                state.data = {};
             }
+            if (!state.data.roundTimes) {
+                state.data.roundTimes = [];
+            }
+            state.data.roundTimes.push(previousRoundAverageTime);
+            // console.log(state.data);
+        }
             newRoundFlag = true;
         }
         previousRound = round;
@@ -547,7 +481,7 @@ stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
     
     if (!firstStimFlag) {
         const portDeltas = [];
-        for (const [id, state] of portStates.entries()) {
+        for (const [id, state] of connectionManager.getPortStates().entries()) {
             let edaDeltaDisplay = analyzeEDA(id, stateRound, newRoundFlag, windowRounds, overlapRounds);
             portDeltas.push({ id, delta: edaDeltaDisplay });
             updateCSVData(id, state, round); //push time, value, stim, and round to 'csvData' object
@@ -594,55 +528,19 @@ sigLineOverlapSlider.value = overlapDefault;
 // initSigBarChart('sigBarChart');
 initSigLineChart('sigLineChart');
 
-const portStates = new Map();
+// portStates is now managed by connectionManager
 
 // let stimEDAValues = [];
 let oldStimValue = '';
 // let data = [];
 
-function ensurePortState(id) {
-    if (!portStates.has(id)) {
-        portStates.set(id, {
-            stimEDAValues: [],
-            stimEDATime: [],
-            // oldStimValue: '',
-            data: [],
-        })
-    }
-    return portStates.get(id);
-}
+// ensurePortState is now handled by connectionManager
 
-function cancelPortState(id) {
-    if (portStates.has(id)) {
-        portStates.delete(id)
-    }
-}
+// cancelPortState is now handled by connectionManager
 
-function updateGameButtonClickability() {
-    const gameButtonDisable = portStates.size === 0 
+// updateGameButtonClickability is now handled by connectionManager
 
-    gameButtons.forEach(button => {
-        if (gameButtonDisable) {
-            button.classList.toggle("disabled", true);
-        } else {
-            button.classList.toggle("disabled", false);
-        }
-    })
-}
-
-function resetEDAValues(id) {
-    if (portStates.has(id)) {
-        const state = portStates.get(id);
-        state.stimEDAValues = [];
-        state.stimEDATime = [];
-        state.roundTimes = [];
-        // state.oldStimValue = '';
-        state.data = [];
-    }
-    // stimEDAValues = [];
-    // oldStimValue = '';
-    // data = [];
-}
+// resetEDAValues is now handled by connectionManager
 
 function formatTimeCSV(date) {
     return date.getFullYear() + '-' +
@@ -655,7 +553,7 @@ function formatTimeCSV(date) {
 }
 
 function updateEDA(value, now, id) {
-    const state = portStates.get(id);
+    const state = connectionManager.getPortStates().get(id);
     state.stimEDAValues.push(value);
     state.stimEDATime.push(formatTimeCSV(new Date(now)));
 }
@@ -706,7 +604,7 @@ let tester = {
 function mergeData() {
     const merged = {};
 
-    for (const [id, state] of portStates.entries()) {
+    for (const [id, state] of connectionManager.getPortStates().entries()) {
         for (const [stim, obj] of Object.entries(state.data)) {
             if (stim === 'grandMean' || stim === 'grandStdDev') continue;
             if (!merged[stim]) merged[stim] = {};
@@ -720,7 +618,7 @@ let mergedData = {};
 let previousWindowStartRound = 0;
 
 function analyzeEDA(id, round, newRoundFlag, windowRounds, overlapRounds) {
-    const state = ensurePortState(id);
+    const state = connectionManager.ensurePortState(id);
     getCurrentStim();
     const edaDelta = findMaxDelta(state.stimEDAValues);
     if(!state.data[oldStimValue]) {
