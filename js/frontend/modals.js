@@ -39,7 +39,7 @@ rightModalButton.addEventListener("click", () => {
     const collapsed = rightModal.classList.toggle("collapsed"); //Toggle whether the right modal is collapsed or expanded. 
     if (!leftModal.classList.contains("collapsed")) { //Collapse the left modal. 
         leftModal.classList.add("collapsed");
-        stimControlToggleButton.innerHTML = rightArrow;
+        rightModalButton.innerHTML = rightArrow;
     }
     if (collapsed) { //If the right modal is collapsed, set the central modal width to 50%. 
         centralModalWrapper.classList.add("shifted");

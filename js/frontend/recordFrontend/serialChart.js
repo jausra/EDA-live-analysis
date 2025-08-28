@@ -1,12 +1,13 @@
-import { randomColor } from '../utils.js';
+import { randomColor, colorMap } from '../../utils.js';
 let chart;
 let autoscroll = true;
-const AUTOSCROLL_WINDOW = 50;
+let autoscrollWindow = 5000;
 
 export const annotationColorDict = {};
 
 //Function to initialize the resistance vs time plot
 export function initSerialChart(canvasId) {
+// export function initSerialChart(canvasId, xMin, xMax) {
     const ctx = document.getElementById(canvasId).getContext('2d'); //Gets the drawing surface for 2D graphics.
     chart = new Chart(ctx, {
         type: 'line', //Line graph.
@@ -52,7 +53,7 @@ export function initSerialChart(canvasId) {
                         font: {
                             weight: 'bold',
                             size: 14,
-                        },
+                        }
                     },
                     type: 'time', //Enables parsing of time values and formatting of labels.
                     time: { //Set each tick mark one second apart.
@@ -60,7 +61,9 @@ export function initSerialChart(canvasId) {
                     },
                     grid: { //Turn off the grid lines for the x-axis.
                         display: false
-                    }
+                    }, 
+                    // min: xMin,
+                    // max: xMax,
                 },
                 y: {
                     position: 'left', //Put the primary y-axis on the left of the graph.
@@ -91,7 +94,7 @@ export function initSerialChart(canvasId) {
             {
                 id: 'hideLabel',
                 afterDraw(chart) {
-                    const annotations = chart.options.plugins.annotation?.annotations; //Find chart anotations.
+                    const annotations = chart.options.plugins.annotation?.annotations; // Find chart annotations
                     if (!annotations) return; //Do nothing if no annotations found.
 
                     const xScale = chart.scales.x; //Extract x-axis features of chart.
@@ -114,21 +117,71 @@ export function initSerialChart(canvasId) {
     })
 }
 
-//Function to find the dataset with label 'id'. 
-function getDataset(id) {
-    return chart.data.datasets.find(ds => ds.label === id);
+
+// Function to set the x-axis minimum and maximum values of the chart
+export function setSerialChartXRange(xMin, xMax) {
+    if (chart && chart.options && chart.options.scales && chart.options.scales.x) {
+        chart.options.scales.x.min = xMin;
+        chart.options.scales.x.max = xMax;
+        chart.update('none');
+    }
 }
 
-//Function to add a single data point ('value') at the time it was received ('now') for a given plot with label 'id'.
-export function updateSerialChart(value, now, id) {
-    let dataset = getDataset(id); //Find the dataset with label 'id'. 
-    dataset.data.push({ x: now, y: value }); //Encapsulate the time and resistance value into an object and push it to the dataset's data array. 
 
-    //If autoscroll is enabled, set the x-axis max and min to show the most recent 5-seconds.
-    //To-Do: make the window size adjustable.
+//Function for getting or creating the dataset for a given port ID. 
+function getDataset(id) {
+    let dataset = chart.data.datasets.find(ds => ds.label === id);
+
+    // If the dataset does not exist, create it
+    if (!dataset) {
+        // Ensure y2 axis exists if we're adding sensor2
+        if (id === 'sensor2' && !chart.options.scales.y2) {
+            chart.options.scales.y2 = {
+                position: 'right',
+                title: { // Add the secondary y-axis title
+                    display: true,
+                    text: 'EDA Value (Port 2)',
+                    color: 'green',
+                    font: {
+                        weight: 'bold',
+                        size: 16,
+                    }
+                },
+                ticks: { // Add the secondary y-axis ticks
+                    color: '#000',
+                    font: {
+                        weight: 'bold',
+                        size: 14,
+                    }
+                },
+            }
+        }
+
+        // Add the dataset to 'chart.data.datasets'.
+        dataset = {
+            label: id,
+            data: [],
+            pointRadius:0,
+            borderColor: id === 'sensor1' ? 'purple' : 'green', 
+            backgroundColor: id === 'sensor1' ? 'purple' : 'green',
+            yAxisID: id === 'sensor1' ? 'y' : 'y2'
+        };
+        chart.data.datasets.push(dataset);
+    }
+
+    return dataset;
+}
+
+// Function to add a single data point ('value') at the time it was received ('now') for a given plot with label 'id'
+export function updateSerialChartValue(value, now, id) {
+    let dataset = getDataset(id); //Find or create the dataset with label 'id'
+    dataset.data.push({ x: now, y: value }); //Encapsulate the time and resistance value into an object and push it to the dataset's data array
+
+    // If autoscroll is enabled, set the x-axis max and min to show the most recent 5-seconds
+    // To-Do: make the window size adjustable
     if (autoscroll) {
         const maxX = Date.now();
-        const minX = maxX - 5000;
+        const minX = maxX - autoscrollWindow;
 
         chart.options.scales.x.min = minX;
         chart.options.scales.x.max = maxX;
@@ -137,10 +190,22 @@ export function updateSerialChart(value, now, id) {
     chart.update('none'); //Apply changes to the chart with no animation
 }
 
-//Function to set the global autoscroll variable.
-export function setAutoscroll(value) {
-    autoscroll = value;
+// Function to add a single data point ('value') at the time it was received ('now') for a given plot with label 'id'
+export function updateSerialChartArray(valueArray, timeArray, id) {
+    let dataset = getDataset(id); // Find or initialize the dataset with label 'id'
+
+    // Replace the dataset with valueArray and timeArray
+    dataset.data = valueArray.map((value, index) => ({
+        x: timeArray[index],
+        y: value
+    }));
+
+    chart.update('none'); // Apply changes to the chart with no animation
 }
+
+document.getElementById("autoscrollSerChartButton").addEventListener("click", () => {
+    autoscroll = true;
+});
 
 //Function to draw colored box and show stimulus label during relevant timepoints.
 export function annotateChartWithStim(stim, color='random', startTime, stopTime) {
@@ -160,7 +225,7 @@ export function annotateChartWithStim(stim, color='random', startTime, stopTime)
         xMax: stopTime, //Define the stop time of the box.
         backgroundColor: annotationColorDict[stim], //Color the box based on the lookup table 'annotationColorDict'.
         label: { //Adds a label inside the annotation box. 
-            content: stim.split('\n'), //Splits the stim string into multiple lines if it contains '\n'.
+            content: stim.split(' '), //Splits the stim string into multiple lines if it contains a space.
             enabled: true, //Makes sure the label is shown. 
             position: 'start', //Position the label at xMin.
             textAlign: 'left', //Left-align the label.
@@ -193,55 +258,98 @@ export function annotateChartWithDelta(portDeltas, stim, startTime) {
     chart.update();
 }
 
-//Function to clear the resistance vs time plot
-export function clearSerialChart(id) {
-    let dataset = getDataset(id); //Find the dataset with label 'id'. 
+// Function to annotate the chart with imported session data
+export function annotateChartWithImportedSession(sessionData) {
+    if (!sessionData || !sessionData.rounds || !sessionData.stims || !sessionData.types || !sessionData.startTimes || !sessionData.stopTimes) {
+        console.warn('Invalid session data provided for annotation');
+        return;
+    }
 
-    //If the dataset does not exist, create it
-    //Question: How are 'multiplePorts' detected if we only add the datasets after checking 'chart.data.datasets.length'?
-    if (!dataset) {
-        // Adds a second y-axis if multiple ports are connected and a second y-axis currently does not exist.
-        const multiplePorts = chart.data.datasets.length > 0;
-        if (multiplePorts && !chart.options.scales.y2) { 
-            chart.options.scales.y2 = {
-                position: 'right',
-                title: { //Add the secondary y-axis title
-                    display: true,
-                    text: 'EDA Value (Port 2)',
-                    color: 'green',
-                    font: {
-                        weight: 'bold',
-                        size: 16,
-                    }
-                },
-                ticks: { //Add the secondary y-axis ticks
-                    color: '#000',
-                    font: {
-                        weight: 'bold',
-                        size: 14,
-                    }
-                },
+    // Clear any existing annotations first
+    if (chart.options.plugins.annotation?.annotations) {
+        chart.options.plugins.annotation.annotations = {};
+    }
+
+    // Create annotations for each round/stim
+    for (let i = 0; i < sessionData.rounds.length; i++) {
+        const stim = sessionData.stims[i];
+        const type = sessionData.types[i];
+        const startTime = sessionData.startTimes[i];
+        const stopTime = sessionData.stopTimes[i];
+
+        // Skip if we don't have valid time data
+        if (!startTime || !stopTime || isNaN(startTime) || isNaN(stopTime)) {
+            continue;
+        }
+
+        // Check if the stim has an associated color, if not assign a random one
+        if (!(stim in annotationColorDict)) {
+            if (type === "Drawing") {
+                const color = stim.split(" ")[0];
+                annotationColorDict[stim] = colorMap[color];
+            } else {
+                annotationColorDict[stim] = randomColor();
             }
         }
 
-        //Add the dataset to 'chart.data.datasets'.
-        dataset = {
-            label: id,
-            data: [],
-            pointRadius:0,
-            borderColor: id === 'sensor1' ? 'purple' : 'green', 
-            backgroundColor: id === 'sensor1' ? 'purple' : 'green',
-            yAxisID: id === 'sensor1' ? 'y' : 'y2'
+        // Add the colored box and stim label to the graph
+        chart.options.plugins.annotation.annotations[`stim-${startTime}`] = {
+            type: 'box',
+            xMin: startTime,
+            xMax: stopTime,
+            backgroundColor: annotationColorDict[stim],
+            label: {
+                content: stim.split(' '),
+                enabled: true,
+                position: 'start',
+                textAlign: 'left',
+                font: {
+                    size: 24,
+                    weight: 'bold',
+                },
+                color: 'blue',
+                clip: true,
+            },
         };
-        chart.data.datasets.push(dataset);
-    }
-    
-    dataset.data = []; //Clear all data from the dataset.
-
-    //Clear all labels/boxes from the graph
-    if(chart.options.plugins.annotation.annotations) {
-        chart.options.plugins.annotation.annotations = {}; 
     }
 
     chart.update();
+}
+
+//Function to clear the resistance vs time plot
+export function clearSerialChart(connectionManager) {
+    chart.data.datasets = []; //Clear the dataset array. 
+
+    if (chart.options.scales.y2) { //Clear the second y-axis if it exists.
+        delete chart.options.scales.y2;
+        chart.update();
+    }
+
+    for (const [id, state] of connectionManager.getPortStates().entries()) { //Cycle through each port connection. 
+        let dataset = getDataset(id); //Find the dataset with label 'id'. If it does not exist, initialize it. If there is more than one dataset, add a second y-axis for it. 
+
+        dataset.data = []; //Clear all data from the dataset.
+
+        //Clear all labels/boxes from the graph
+        if(chart.options.plugins.annotation.annotations) {
+            chart.options.plugins.annotation.annotations = {}; 
+        }
+
+        chart.update();
+    }
+}
+
+export function serChartZoomOut() {
+    autoscroll = false;
+    chart.options.scales.x.min = undefined;
+    chart.options.scales.x.max = undefined;
+    chart.update('none');
+}
+
+export function setSerChartAutoscrollWindow(window){
+    autoscrollWindow = window;
+}
+
+export function getSerChartAutoscrollWindow(){
+    return autoscrollWindow;
 }

@@ -114,7 +114,6 @@ export class ConnectionManager {
             const state = this.portStates.get(id);
             state.stimEDAValues = [];
             state.stimEDATime = [];
-            state.roundTimes = [];
             state.data = [];
         }
     }

@@ -1,8 +1,11 @@
-import { colorMap } from "../utils.js";
+import { colorMap } from "../../utils.js";
 
 export default class CreateStimDisplay{
 
-    constructor(displayTarget, radialGaugeTarget, compressedStimObject) {
+    constructor(compressedStimObject) {
+        const displayTarget = document.getElementById("stimDisplay");
+        const radialGaugeTarget = document.getElementById("stimRadialGauge");
+
         this.displayTarget = displayTarget; //Word or drawing target. 
         this.radialGaugeTarget = radialGaugeTarget; //Radial gauge target. 
         this.index = 0;
@@ -131,7 +134,7 @@ export default class CreateStimDisplay{
         this.clearRadialGauge(this.radialGaugeTarget);
     }
 
-    //Method to advance the index and round, the run 'this.showCurrent'. 
+    //Method to advance the index and round, then run 'this.showCurrent'. 
     advance() {
         this.index = this.index + 1;
         if (this.index === this.expandedValue.length){
@@ -192,7 +195,7 @@ export default class CreateStimDisplay{
 
             //Run the callback functions with the stim information. This will be displayed in the serial chart. 
             this.stimDisplayListeners.forEach(cb => cb({
-                stim: `${value.color}\n${value.shape}`,
+                stim: `${value.color} ${value.shape}`,
                 round: this.round,
                 color: colorMap[value.color], //Use the colorMap (utils.js) to get the rgba from string. 
                 startTime,

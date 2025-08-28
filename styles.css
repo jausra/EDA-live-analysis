@@ -149,12 +149,33 @@ header h1 {
 
 .gameButton:hover {
     cursor: pointer;
+    background-color: #90c0e0;
 }
 
 .gameButton.disabled {
     pointer-events: none;
     opacity: 0.5;
     cursor: not-allowed;
+}
+
+#importContainer {
+    display: flex;
+}
+
+#importButton {
+    font-size: 24px;
+    font-weight: 500;
+    padding: 5px 12px;
+    background-color: lightblue;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+#importButton:hover {
+    cursor: pointer;
+    background-color: #90c0e0;
 }
 
 #gameTitleContainer {
@@ -250,7 +271,7 @@ header h1 {
     font-size: 24px;
     font-weight: 500;
     padding: 5px 12px;
-    background-color: white;
+    background-color: lightblue;
     border: none;
     border-radius: 3px;
     cursor: pointer;
@@ -577,62 +598,301 @@ header h1 {
 #serialChartContainer {
     width: 90%;
     height: 40%;
+    margin: 15px;
     background-color: #f5f5f5;
     overflow: hidden;
     border-radius: 15px;
     padding: 20px 10px -10px 20px;
-}
-
-#resetZoomButton {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    padding: 15px 25px;
-    background-color: #f5f5f5;
-    border-radius: 15px;
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-}
-
-#resetZoomButton:hover {
-    background-color: #add8e6;
-}
-
-#resetZoomButton:active {
-    background-color: #00a9d3;
+    border: solid #f4c542;
+    border-width: 8px;
 }
 
 #sigChartContainer {
     width: 90%;
     height: 40%;
+    margin: 15px;
     background-color: #f5f5f5;
     border-radius: 15px;
     padding: 20px 10px -10px 20px;
+    border: solid #f08c42;
+    border-width: 8px;
 }
 
 .sigSlider {
-    width: 90%;
+    /* slider sizing variables for easy tuning */
+    --sig-track-h: 10px;
+    --sig-thumb-d: 18px;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: var(--sig-track-h);
+    background: transparent;
+    outline: none;
+    border: none;
+  }
+
+  /* Chrome, Safari, Edge track */
+  .sigSlider::-webkit-slider-runnable-track {
+    height: var(--sig-track-h);
+    background: #ddd;
+    border-radius: 3px;
+  }
+  
+  /* Chrome, Safari, Edge */
+  .sigSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: var(--sig-thumb-d);
+    height: var(--sig-thumb-d);
+    background: #f08c42;     
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    margin-top: calc((var(--sig-track-h) - var(--sig-thumb-d)) / 2);
+  }
+  
+  /* Firefox */
+  .sigSlider::-moz-range-thumb {
+    width: var(--sig-thumb-d);
+    height: var(--sig-thumb-d);
+    background: #f08c42;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+  
+  /* Track in Firefox */
+  .sigSlider::-moz-range-track {
+    background: #ddd;
+    height: var(--sig-track-h);
+    border-radius: 3px;
+  }
+
+.sigHorFlex1 {
+    display: flex;
+    /* justify-content: space-between; */
+    /* margin: 30px 0 0 0; */
+    width: 100%;
+    height: 200px;
 }
 
-#sigLineSubmitButton {
-    margin-top: 10px;
-    margin-bottom: 20px;
-    padding: 15px 25px;
-    background-color: #f5f5f5;
-    border-radius: 15px;
+.sigHorFlex2 {
+    display: flex;
+    justify-content: space-between;
+    margin: 30px 0 0 22px;
+    width: 95%;
+}
+
+.sigVerFlex {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    margin: 0 30px 30px 30px;
+    width: 100%;
+}
+
+.sigParam {
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.chartButtonContainer {
+    margin: 10px;
+    display: grid;
+    grid-template-columns: 60px 80px;
+    grid-template-rows: 50px 50px 50px;
+    gap: 10px;
+}
+
+#resetSerChartButton {
+    grid-row: 1;
+    grid-column: 1;
+    font-size: 70px;
+    transform: rotate(180deg);
+    border-radius: 10px;
+    background-color: #f4c542;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
     border: none;
-    font-size: 16px;
+    cursor: pointer;
+}
+
+#resetSerChartButton:hover {
+    background-color: #f7d46f;
+}
+
+#resetSerChartButton:active {
+    background-color: #c9a829;
+}
+
+.serChartAutoscrollCluster {
+    grid-row: 1;
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: 20px 50px;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    height: 50px;
+}
+
+#increaseSerChartAutoscrollWindowButton {
+    grid-row: 1;
+    grid-column: 1;
+    background-color: #f4c542;
+    border-top-left-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+#increaseSerChartAutoscrollWindowButton:hover {
+    background-color: #f7d46f;
+}
+
+#increaseSerChartAutoscrollWindowButton:active {
+    background-color: #c9a829;
+}
+
+#decreaseSerChartAutoscrollWindowButton {
+    grid-row: 2;
+    grid-column: 1;
+    background-color: #f4c542;
+    border-bottom-left-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+#decreaseSerChartAutoscrollWindowButton:hover {
+    background-color: #f7d46f;
+}
+
+#decreaseSerChartAutoscrollWindowButton:active {
+    background-color: #c9a829;
+}
+
+#autoscrollSerChartButton {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    background-color: #f4c542;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border: none;
+    cursor: pointer;
     font-weight: bold;
 }
 
-.sigHorFlex {
-    display: flex;
-    justify-content: space-between;
-    margin: 30px 0 0 0;
-    width: 90%;
+#autoscrollSerChartButton:hover {
+    background-color: #f7d46f;
 }
 
-.sigParam{
-    font-size: 20px;
-    font-weight: 900;
+#autoscrollSerChartButton:active {
+    background-color: #c9a829;
+}
+
+#resetSigChartButton {
+    grid-row: 2;
+    grid-column: 1;
+    font-size: 70px;
+    transform: rotate(180deg);
+    border-radius: 10px;
+    background-color: #f08c42;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    border: none;
+    cursor: pointer;
+}
+
+#resetSigChartButton:hover {
+    background-color: #f3a66b;
+}
+
+#resetSigChartButton:active {
+    background-color: #c76627;
+}
+
+.sigChartAutoscrollCluster {
+    grid-row: 2;
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: 20px 50px;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+    height: 50px;
+}
+
+#increaseSigChartAutoscrollWindowButton {
+    grid-row: 1;
+    grid-column: 1;
+    background-color: #f08c42;
+    border-top-left-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+#increaseSigChartAutoscrollWindowButton:hover {
+    background-color: #f3a66b;
+}
+
+#increaseSigChartAutoscrollWindowButton:active {
+    background-color: #c76627;
+}
+
+#decreaseSigChartAutoscrollWindowButton {
+    grid-row: 2;
+    grid-column: 1;
+    background-color: #f08c42;
+    border-bottom-left-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+#decreaseSigChartAutoscrollWindowButton:hover {
+    background-color: #f3a66b;
+}
+
+#decreaseSigChartAutoscrollWindowButton:active {
+    background-color: #c76627;
+}
+
+#autoscrollSigChartButton {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    background-color: #f08c42;
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#autoscrollSigChartButton:hover {
+    background-color: #f3a66b;
+}
+
+#autoscrollSigChartButton:active {
+    background-color: #c76627;
+}
+
+#sigLineSubmitButton {
+    grid-row: 3;
+    grid-column: 1 / span 2;
+    padding: 5px;
+    background-color: #f08c42;
+    border-radius: 10px;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 95%;
+}
+
+#sigLineSubmitButton:hover {
+    background-color: #f3a66b;
+}
+
+#sigLineSubmitButton:active {
+    background-color: #c76627;
 }

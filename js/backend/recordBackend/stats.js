@@ -165,9 +165,9 @@ export function analyzeRounds(data, startRound, stopRound) {
     if (!data.windowTimes) {
         data.windowTimes = [];
     }
-    const windowRoundTimes = data.roundTimes.slice(startRound, stopRound +1);
-    const avgWindowRoundTime = getAvg(windowRoundTimes);
-    data.windowTimes.push(avgWindowRoundTime);
+    const windowTimes = data.roundTimes.slice(startRound, stopRound +1);
+    const avgWindowTime = getAvg(windowTimes);
+    data.windowTimes.push(avgWindowTime);
 
     return data; //return the data object. 
 }

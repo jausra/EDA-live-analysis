@@ -33,6 +33,12 @@
                                 <div id="redDotGameButton" class="gameButton disabled"> Red Dot Game</div>
                                 <div id="customGameButton" class="gameButton disabled"> Custom Game</div>
                             </div>
+                            <div id="importContainer">
+                                <button id="importButton">
+                                    Import Data
+                                </button>
+                                <input type="file" id="fileInput" webkitdirectory multiple accept=".csv" style="display: none;" />
+                            </div>
                             <div id="gameTitleContainer" class="hiddenFlex">
                                 <button id="backButton">Back</button>
                                 <div id="gameTitleSpacer">
@@ -100,6 +106,7 @@
                                     </div>
                                 </div>
                                 <input type="range" class="calSlider" id="calGainSlider">
+                                <input type="text" id="debugCalTextInput">
                                 <button id="calSubmitButton">Submit</button>
                                 <button id="calStartButton">Start</button>
                             </div>
@@ -113,22 +120,46 @@
                         <div id="serialChartContainer">
                             <canvas id="serialChart" width="500px"></canvas>
                         </div>
-                        <button id="resetZoomButton">Reset Zoom</button>
                         <div id="sigChartContainer">
-                            <!-- <canvas id="sigBarChart"></canvas> -->
-                            <canvas id="sigLineChart"></canvas>
+                            <canvas id="sigLineChart" width="500px"></canvas>
                         </div>
-                        <div class="sigHorFlex">
-                            <p class="sigParam">Significance Window (Rounds):</p>
-                            <p class="sigParam" id="sigLineWindowText"></p>
+                        <div class="sigHorFlex1">
+                            <div class="sigVerFlex">
+                                <div class="sigHorFlex2">
+                                    <p class="sigParam">Significance Window (Rounds):</p>
+                                    <p class="sigParam" id="sigLineWindowText"></p>
+                                </div>
+                                <input type="range" class="sigSlider" id="sigLineWindowSlider">
+                                <div class="sigHorFlex2">
+                                    <p class="sigParam">Significance Overlap:</p>
+                                    <p class="sigParam" id="sigLineOverlapText"></p>
+                                </div>
+                                <input type="range" class="sigSlider" id="sigLineOverlapSlider">
+                            </div>
+                            <div class="chartButtonContainer">
+                                <button id="resetSerChartButton">
+                                    <span style="position: relative; top: -6px;">&#8635;</span>
+                                </button>
+                                <div class="serChartAutoscrollCluster">
+                                    <button id="increaseSerChartAutoscrollWindowButton">▲</button>
+                                    <button id="decreaseSerChartAutoscrollWindowButton">▼</button>
+                                    <button id="autoscrollSerChartButton"></button>
+                                </div>
+
+                                <button id="resetSigChartButton">
+                                    <span style="position: relative; top: -6px;">&#8635;</span>
+                                </button>
+                                <div class="sigChartAutoscrollCluster">
+                                    <button id="increaseSigChartAutoscrollWindowButton">▲</button>
+                                    <button id="decreaseSigChartAutoscrollWindowButton">▼</button>
+                                    <button id="autoscrollSigChartButton">
+                                        <span style="letter-spacing:-4px;">&#9658;&#9658;</span>
+                                    </button>
+                                </div>
+
+                                <button id="sigLineSubmitButton">Submit Window</button>
+                            </div>
                         </div>
-                        <input type="range" class="sigSlider" id="sigLineWindowSlider">
-                        <div class="sigHorFlex">
-                            <p class="sigParam">Significance Overlap:</p>
-                            <p class="sigParam" id="sigLineOverlapText"></p>
-                        </div>
-                        <input type="range" class="sigSlider" id="sigLineOverlapSlider">
-                        <button id="sigLineSubmitButton">Submit</button>
                     </div>
                     <button id="rightModalButton">&#9664;</button>
                 </div>
