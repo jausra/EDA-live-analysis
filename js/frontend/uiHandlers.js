@@ -154,7 +154,7 @@ export class UIHandlers {
     } = {}) {
         this.toggleHideGameButtons(); //Hide the game buttons and the port connection buttons. 
         
-        const stimGenAndRand = document.getElementById("stimGenAndRand"); 
+        const stimGenAndRand = document.getElementById("stimGenAndRand");
         const gameTitleContainer = document.getElementById("gameTitleContainer");
         const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
         const stimStartStopButton = document.getElementById("stimStartStopButton");

@@ -4,6 +4,15 @@ export default class StimPresets {
         this.stimObject = stimObject;
     }
 
+    //Add breathing game preset.
+    addCalibrateStim() {
+        this.stimObject.clear();
+        this.stimObject.stimOrder = 'ordered';
+        
+        this.stimObject.addStim('Word', 'Normal Breathing', 1, 10000);
+        this.stimObject.addStim('Word', 'Deep Inhale (5s)\nDeep Exhale (5s)', 1, 10000);
+    }
+
     //Add debug game preset. 
     addDebugStim() {
         this.stimObject.clear();
@@ -51,6 +60,9 @@ export default class StimPresets {
     //Apply preset by name.
     applyPreset(presetName) {
         switch (presetName) {
+            case 'Calibrate':
+                this.addCalibrateStim();
+                break;
             case 'Debug':
                 this.addDebugStim();
                 break;

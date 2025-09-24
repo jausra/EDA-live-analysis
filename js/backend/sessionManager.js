@@ -1,16 +1,41 @@
 import { stopSerial, startSerial } from './recordBackend/serialReader.js';
-import { clearSerialChart } from '../frontend/recordFrontend/serialChart.js';
+import { clearSerialChart, annotateChartWithStim, annotateChartWithDelta } from '../frontend/recordFrontend/serialChart.js';
+import { updateSigLineChartValue } from '../frontend/recordFrontend/significanceLineChart.js';
 
 //Class for managing stim and record states. 
 export class SessionManager {
-    constructor(stimDisplay, connectionManager, calibrationManager) {
+    constructor(stimDisplay, connectionManager, roundManager, stimAnalyzer, dataProcessor) {
         this.stimDisplay = stimDisplay;
         this.connectionManager = connectionManager;
-        this.calibrationManager = calibrationManager;
+        this.roundManager = roundManager;
+        this.stimAnalyzer = stimAnalyzer;
+        this.dataProcessor = dataProcessor;
         this.stopSerial = stopSerial;
         this.clearSerialChart = clearSerialChart;
         this.startSerial = startSerial;
         this.sessionStartTime = null;
+    }
+
+    initStimDisplayCB(){
+        this.stimDisplay.clearOnStimDisplay(); // Clear all callbacks
+        this.roundManager.resetFirstStim();// Reset the first stim flag
+        // Function to be called every time we have a new stim. 
+        this.stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
+            this.roundManager.handleGameStimulus(
+                stim, 
+                round, 
+                color, 
+                startTime, 
+                stopTime,
+                this.stimDisplay, 
+                this.stimAnalyzer, 
+                updateSigLineChartValue, 
+                (id, state) => this.dataProcessor.updateSensorCSVData(id, state),
+                (round_, stim_, type_, startTime_, stopTime_) => this.dataProcessor.updateSessionCSVData(round_, stim_, type_, startTime_, stopTime_),
+                annotateChartWithDelta, 
+                annotateChartWithStim
+            );
+        });
     }
 
     //Method to format the start time of the session. Format is 'YYYY-MM-DD_HH-mm-SS-sss'.
@@ -27,6 +52,8 @@ export class SessionManager {
     //Method to start the session. 
     async startSession(resetColorOptions, toggleStimControlDisable, updateInterface) {
         try {
+            this.initGameCB();
+
             this.stimDisplay.running = true; //Set the 'running' flag to true. 
             const stimStartStopButton = document.getElementById("stimStartStopButton");
             if (stimStartStopButton) {
@@ -42,7 +69,10 @@ export class SessionManager {
 
             resetColorOptions(); //Reset the color that will be associated with each stim. 
             this.sessionStartTime = this.formatTimeFilename(new Date(Date.now())); //Set the new session start time. 
-            this.calibrationManager.hideCalibrationContainer(); //Hide the calibration controls. 
+            
+            // this.calibrationManager.hideCalibrationContainer(); //Hide the calibration controls. 
+            let calContainer = document.getElementById("calContainer");
+            calContainer.classList.toggle("hiddenFlex", false);
 
             await this.showInitialCountdown(); //Show the initial countdown. 
             toggleStimControlDisable(true); //Disable session control buttons. 

@@ -40,13 +40,13 @@ export class RoundManager {
                     state.data.roundTimes.push(this.previousRoundAverageTime);
                 }
                 
-                this.newRoundFlag = true; //Set newRoundFlag to true, we will use it in handleStimulus. 
+                this.newRoundFlag = true; //Set newRoundFlag to true, we will use it in handleGameStimulus. 
             }
             this.previousRound = round;
         }
     }
 
-    handleStimulus(stim, round, color, startTime, stopTime, stimDisplay, stimAnalyzer, updateSigLineChartValue, updateSensorCSVData, updateSessionCSVData, annotateChartWithDelta, annotateChartWithStim) {
+    handleGameStimulus(stim, round, color, startTime, stopTime, stimDisplay, stimAnalyzer, updateSigLineChartValue, updateSensorCSVData, updateSessionCSVData, annotateChartWithDelta, annotateChartWithStim) {
         this.handleNewRound(round, startTime); //Check if there's a new round. If so, mark its time. 
         this.getCurrentStim(stimDisplay);
         if (!this.firstStimFlag) { //Check if this isn't the very first stimulus. 
@@ -188,6 +188,10 @@ export class RoundManager {
         this.previousRoundStopTime = null;
         this.currentRoundStartTime = null;
         this.previousRoundAverageTime = null;
+    }
+
+    resetFirstStim() {
+        this.firstStimFlag = true;
     }
 
     isFirstStim() {

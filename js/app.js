@@ -17,7 +17,6 @@ import { ChartControls } from './frontend/recordFrontend/chartControls.js';
 
 //Record Backend. 
 const connectionManager = new ConnectionManager();
-const calibrationManager = new CalibrationManager(connectionManager);
 const dataExporter = new DataExporter();
 const stimAnalyzer = new StimAnalyzer(connectionManager);
 const roundManager = new RoundManager(connectionManager);
@@ -38,7 +37,8 @@ initSigLineChart('sigLineChart');
 const stimDisplay = new CreateStimDisplay(stimObject);
 
 //Record/Stim Backend.
-const sessionManager = new SessionManager(stimDisplay, connectionManager, calibrationManager);
+const sessionManager = new SessionManager(stimDisplay, connectionManager, roundManager, stimAnalyzer, dataProcessor);
+const calibrationManager = new CalibrationManager(connectionManager, sessionManager, stimPresets, stimDisplay, roundManager);
 
 //Record/Stim Frontend.
 const uiHandlers = new UIHandlers(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimManager, stimPresets, dataProcessor);
@@ -51,22 +51,22 @@ function updateInterface(value, now, id) {
 window.updateInterface = updateInterface;
 
 //Function to be called every time we have a new stim. 
-stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
-    roundManager.handleStimulus(
-        stim, 
-        round, 
-        color, 
-        startTime, 
-        stopTime,
-        stimDisplay, 
-        stimAnalyzer, 
-        updateSigLineChartValue, 
-        (id, state) => dataProcessor.updateSensorCSVData(id, state),
-        (round_, stim_, type_, startTime_, stopTime_) => dataProcessor.updateSessionCSVData(round_, stim_, type_, startTime_, stopTime_),
-        annotateChartWithDelta, 
-        annotateChartWithStim
-    );
-});
+// stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {
+//     roundManager.handleStimulus(
+//         stim, 
+//         round, 
+//         color, 
+//         startTime, 
+//         stopTime,
+//         stimDisplay, 
+//         stimAnalyzer, 
+//         updateSigLineChartValue, 
+//         (id, state) => dataProcessor.updateSensorCSVData(id, state),
+//         (round_, stim_, type_, startTime_, stopTime_) => dataProcessor.updateSessionCSVData(round_, stim_, type_, startTime_, stopTime_),
+//         annotateChartWithDelta, 
+//         annotateChartWithStim
+//     );
+// });
 
 //window.csvData = dataProcessor.getCSVData();
 window.mergedData = stimAnalyzer.getMergedData();

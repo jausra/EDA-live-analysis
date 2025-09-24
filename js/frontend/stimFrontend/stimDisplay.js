@@ -263,4 +263,8 @@ export default class CreateStimDisplay{
     onStimDisplay(callback){
         this.stimDisplayListeners.push(callback);
     }
+
+    clearOnStimDisplay(){
+        this.stimDisplayListeners = [];
+    }
 }

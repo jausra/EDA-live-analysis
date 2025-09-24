@@ -4,11 +4,16 @@ import { clearSigLineChart } from '../../frontend/recordFrontend/significanceLin
 
 //Class to control the calibration of the hardware. 
 export class CalibrationManager {
-    constructor(connectionManager) {
+    constructor(connectionManager, sessionManager, stimPresets, stimDisplay, roundManager) {
         this.connectionManager = connectionManager;
+        this.sessionManager = sessionManager;
+        this.stimPresets = stimPresets;
+        this.stimDisplay = stimDisplay;
+        this.roundManager = roundManager;
         this.initializeElements();
         this.setupCalibrationControls();
         this.setupEventListeners();
+        this.previousRound = 1;
     }
 
     //Method to connect to HTML elements. 
@@ -21,6 +26,9 @@ export class CalibrationManager {
         this.calGainInput = document.getElementById("calGainInput");
         this.calGainSlider = document.getElementById("calGainSlider");
         this.calSubmitButton = document.getElementById("calSubmitButton");
+        this.setRMinButton = document.getElementById("setRMinButton");
+        this.setRMaxButton = document.getElementById("setRMaxButton");
+        this.autocalButton = document.getElementById("autocalButton");
     }
 
     //Method to set slider and text input parameters. 
@@ -34,11 +42,13 @@ export class CalibrationManager {
         const gainDefault = 10; // kOhm
 
         // Set slider ranges and default values
+        this.rOff = offsetDefault;
         this.calOffsetSlider.min = offsetMin;
         this.calOffsetSlider.max = offsetMax;
         this.calOffsetInput.value = offsetDefault;
         this.calOffsetSlider.value = offsetDefault;
 
+        this.rGain = gainDefault;
         this.calGainSlider.min = gainMin;
         this.calGainSlider.max = gainMax;
         this.calGainInput.value = gainDefault;
@@ -76,6 +86,73 @@ export class CalibrationManager {
         this.calSubmitButton.addEventListener("click", async () => {
             await this.handleSubmitClick();
         });
+
+        //Set R Min button click handler.
+        this.setRMinButton.addEventListener("click", () => {
+            this.handleRMinClick();
+        });
+
+        //Set R Max button click handler.
+        this.setRMaxButton.addEventListener("click", () => {
+            this.handleRMaxClick();
+        });
+
+        //Autocal button click handler.
+        this.autocalButton.addEventListener("click", async () => {
+            await this.handleAutocalClick();
+        });
+    }
+
+    async handleCalStimulus(round) {
+        if (round !== this.previousRound) {
+            for (const [id, state] of this.connectionManager.getPortStates().entries()) {
+
+                let adcMin = Math.min(...state.stimEDAValues);
+                console.log("ADC Min: ", adcMin);
+                let adcMax = Math.max(...state.stimEDAValues);
+                console.log("ADC Max: ", adcMax);
+
+                //Check if ADC values are in range
+                if (adcMin >= 75 && adcMin <= 95 && adcMax >= 160 && adcMax <= 180) { // If ADC values are in range, start the game
+
+                    console.log("CALIBRATION COMPLETE");
+                } else { // If ADC value are not in range, update the offset and gain resistance
+                    this.calculateTargetRMax(adcMin); //Low ADC corresponds to high wheatstone voltage, which comes from high resistance
+                    this.calculateTargetRMin(adcMax); //High ADC corresponds to low wheatstone voltage, which comes from low resistance
+    
+                    this.calculateOffR();
+                    this.calculateGainR();
+    
+                    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
+
+                    for (const [id, state] of this.connectionManager.getPortStates().entries()) {
+                        await serialWrite(id, command);
+                    }
+                }
+            }
+            this.previousRound = round;
+        }
+    }
+
+    initCalibrationCB(){
+        this.stimDisplay.clearOnStimDisplay(); //Clear all callbacks
+        //Function to be called every time we have a new stim. 
+        this.stimDisplay.onStimDisplay(async ({ stim, round, color, startTime, stopTime }) => {
+            await this.handleCalStimulus(
+                // stim, 
+                round, 
+                // color, 
+                // startTime, 
+                // stopTime,
+                // this.stimDisplay,
+                // this.stimAnalyzer,
+                // updateSigLineChartValue,
+                // (id, state) => this.dataProcessor.updateSensorCSVData(id, state),
+                // (round_, stim_, type_, startTime_, stopTime_) => this.dataProcessor.updateSessionCSVData(round_, stim_, type_, startTime_, stopTime_),
+                // annotateChartWithDelta,
+                // annotateChartWithStim
+            );
+        });
     }
 
     //Handle clicking the calibration button. 
@@ -93,10 +170,18 @@ export class CalibrationManager {
             }
             clearSerialChart(this.connectionManager);
 
+            this.stimPresets.applyPreset("Calibrate"); // Apply the calibration preset
+
+            this.initCalibrationCB(); 
+            this.stimDisplay.running = true;
+
+            await this.sessionManager.showInitialCountdown();
+
             //Start serial reading for all ports.
             for (const [id, state] of this.connectionManager.getPortStates().entries()) {
-                await startSerial(id, updateSerialChartValue);
+                await startSerial(id, window.updateInterface);
             }
+            this.stimDisplay.start();
         } catch (error) {
             console.error("Could not read from serial port:", error);
         }
@@ -104,89 +189,155 @@ export class CalibrationManager {
 
     //Handle changes in offset text input. 
     handleOffsetInputChange(e) {
-        let inputOffset = e.target.value;
+        this.rOff = e.target.value;
         const offsetMin = parseFloat(this.calOffsetSlider.min); //Convert from string to float.
         const offsetMax = parseFloat(this.calOffsetSlider.max); //Convert from string to float.
 
         //Modify the text if it is outside the min/max. 
-        if (inputOffset < offsetMin) {
-            inputOffset = offsetMin;
-            e.target.value = inputOffset;
+        if (this.rOff < offsetMin) {
+            this.rOff = offsetMin;
+            e.target.value = this.rOff;
         }
-        if (inputOffset > offsetMax) {
-            inputOffset = offsetMax;
-            e.target.value = inputOffset;
+        if (this.rOff > offsetMax) {
+            this.rOff = offsetMax;
+            e.target.value = this.rOff;
         }
         
-        this.calOffsetSlider.value = inputOffset; //Make the slider reflect the text input.
+        this.calOffsetSlider.value = this.rOff; //Make the slider reflect the text input.
     }
 
     //Handle changes in offset slider. 
     handleOffsetSliderChange(e) {
-        let sliderOffset = e.target.value;
+        this.rOff = e.target.value;
         const offsetMin = parseFloat(this.calOffsetSlider.min); //Convert from string to float.
         const offsetMax = parseFloat(this.calOffsetSlider.max); //Convert from string to float.
 
         //Modify the slider if it is outside the min/max. 
-        if (sliderOffset < offsetMin) {
-            sliderOffset = offsetMin;
+        if (this.rOff < offsetMin) {
+            this.rOff = offsetMin;
         }
-        if (sliderOffset > offsetMax) {
-            sliderOffset = offsetMax;
+        if (this.rOff > offsetMax) {
+            this.rOff = offsetMax;
         }
         
-        this.calOffsetInput.value = sliderOffset; //Make the text input reflect the slider.
+        this.calOffsetInput.value = this.rOff; //Make the text input reflect the slider.
     }
 
     //Handle changes in gain text input. 
     handleGainInputChange(e) {
-        let inputGain = e.target.value;
+        this.rGain = Number(e.target.value);
         const gainMin = parseFloat(this.calGainSlider.min); //Convert from string to float.
         const gainMax = parseFloat(this.calGainSlider.max); //Convert from string to float.
 
         //Modify the text if it is outside the min/max. 
-        if (inputGain < gainMin) {
-            inputGain = gainMin;
-            e.target.value = inputGain;
+        if (this.rGain < gainMin) {
+            this.rGain = gainMin;
+            e.target.value = this.rGain;
         }
-        if (inputGain > gainMax) {
-            inputGain = gainMax;
-            e.target.value = inputGain;
+        if (this.rGain > gainMax) {
+            this.rGain = gainMax;
+            e.target.value = this.rGain;
         }
         
-        this.calGainSlider.value = inputGain; //Make the slider reflect the text input.
+        this.calGainSlider.value = this.rGain; //Make the slider reflect the text input.
     }
 
     //Handle changes in offset slider. 
     handleGainSliderChange(e) {
-        let sliderGain = e.target.value;
+        this.rGain = Number(e.target.value);
         const gainMin = parseFloat(this.calGainSlider.min); //Convert from string to float.
         const gainMax = parseFloat(this.calGainSlider.max); //Convert from string to float.
 
         //Modify the slider if it is outside the min/max. 
-        if (sliderGain < gainMin) {
-            sliderGain = gainMin;
+        if (this.rGain < gainMin) {
+            this.rGain = gainMin;
         }
-        if (sliderGain > gainMax) {
-            sliderGain = gainMax;
+        if (this.rGain > gainMax) {
+            this.rGain = gainMax;
         }
         
-        this.calGainInput.value = sliderGain; //Make the text input reflect the slider.
+        this.calGainInput.value = this.rGain; //Make the text input reflect the slider.
     }
 
     //Method to send the offset and gain values to the arduino. 
     async handleSubmitClick() {
+        const rGain = Number(this.calGainInput.value);
+        const rOff = Number(this.calOffsetInput.value);
+
         const debugCalTextInput = document.getElementById("debugCalTextInput");
-        const R_me = Number(debugCalTextInput.value);
-        const R_gain = Number(this.calGainInput.value);
-        const R_off = Number(this.calOffsetInput.value);
-        const expectedV_out = R_gain*((1.65 -(3.3*(R_me/(R_me+R_off))))/10.0) + 1.65;
-        // console.log("expectedV_out", expectedV_out);
+        const rMe = Number(debugCalTextInput.value);
+        const expectedV_out = rGain*((1.65 -(3.3*(rMe/(rMe+rOff))))/10.0) + 1.65;
+        console.log("expectedV_out", expectedV_out);
         const expectedADC_out = Math.round(255 * (expectedV_out / 3.3));
         console.log("expectedADC_out", expectedADC_out);
 
+        const command = `SET R_OFF ${rOff} R_GAIN ${rGain}\n`;
+        
+        //Send the command to each port. 
+        //To-Do: modify to send sepcific commends to individual ports. 
+        for (const [id, state] of this.connectionManager.getPortStates().entries()) {
+            await serialWrite(id, command);
+        }
+    }
 
-        const command = `SET R_OFF ${this.calOffsetInput.value} R_GAIN ${this.calGainInput.value}\n`;
+    calculateTargetR(adcTarget) {
+        const vTarget = 3.3* (adcTarget/255.00)
+        const rTarget = (this.rOff*(1.65*(this.rGain+10) - 10*vTarget)/(10*vTarget + 1.65*(this.rGain-10)));
+
+        return rTarget;
+    }
+
+    handleRMinClick() {
+        // this.calculateTargetR();
+        // this.rMin = this.rTarget;
+        const debugCalTextInput = document.getElementById("debugCalTextInput");
+        const rMe = Number(debugCalTextInput.value);
+        this.rMin = rMe;
+        console.log("this.rMin: ", this.rMin);
+    }
+
+    calculateTargetRMin(adcTarget) {
+        this.rMin = this.calculateTargetR(adcTarget);
+        console.log("Smallest resistance:", this.rMin);
+    }
+
+    handleRMaxClick() {
+        // this.calculateTargetR();
+        // this.rMax = this.rTarget;
+        const debugCalTextInput = document.getElementById("debugCalTextInput");
+        const rMe = Number(debugCalTextInput.value);
+        this.rMax = rMe;
+        console.log("this.rMax: ", this.rMax)
+    }
+
+    calculateTargetRMax(adcTarget) {
+        this.rMax = this.calculateTargetR(adcTarget);
+        console.log("Largest resistance:", this.rMax);
+    }
+
+    calculateOffR() {
+        this.rOff = Math.sqrt(this.rMin*this.rMax);
+        console.log("rOff:", this.rOff);
+        this.calOffsetSlider.value = this.rOff;
+        this.calOffsetInput.value = this.rOff;
+    }
+
+    calculateGainR() {
+        // this.rGain = -5.5/(1.65-3.3*(this.rMin/(this.rMin+this.rOff)));
+        this.rGain = -5.5/(1.65-3.3*(this.rMax/(this.rMax+this.rOff)));
+        console.log("rGain:", this.rGain);
+        this.calGainSlider.value = this.rGain;
+        this.calGainInput.value = this.rGain;
+    }
+
+    async handleAutocalClick() {
+        console.log("rMin:", this.rMin);
+        console.log("rMax:", this.rMax);
+
+        this.calculateOffR();
+        this.calculateGainR();
+
+        const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
         
         //Send the command to each port. 
         //To-Do: modify to send sepcific commends to individual ports. 
