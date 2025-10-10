@@ -1,21 +1,26 @@
 import { resetColorOptions } from '../utils.js';
 import { showCentralModal } from './modals.js';
 import { stopSerial, resumeSerial } from '../backend/recordBackend/serialReader.js';
-import { initSerialChart } from "./recordFrontend/serialChart.js";
+import { initSerialChart, clearSerialChart } from "./recordFrontend/serialChart.js";
 
 
 //Class to handle button clicks for both the record and stim commands. 
 export class UIHandlers {
-    constructor(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimManager, stimPresets, dataProcessor) {
+    // constructor(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimManager, stimPresets, dataProcessor) {
+    constructor(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimPresets, stimAnalyzer, dataProcessor) {
         this.sessionManager = sessionManager;
         this.dataImporter = dataImporter;
         this.dataExporter = dataExporter;
         this.stimDisplay = stimDisplay;
         this.connectionManager = connectionManager;
         this.calibrationManager = calibrationManager;
-        this.stimManager = stimManager;
+        // this.stimManager = stimManager;
         this.stimPresets = stimPresets;
+        this.stimAnalyzer = stimAnalyzer;
         this.dataProcessor = dataProcessor;
+
+        this.stopSerial = stopSerial;
+        this.clearSerialChart = clearSerialChart;
         
         //State variables.
         this.firstStimFlag = true;
@@ -107,6 +112,17 @@ export class UIHandlers {
             });
         }
 
+        //Normal game button.
+        const msiNormalGameButton = document.getElementById("msiNormalGameButton");
+        if (msiNormalGameButton) {
+            msiNormalGameButton.addEventListener("click", () => {
+                this.msiHandleGameButtonClick({
+                    gameTitleText: "Normal",
+                    presetName: "Normal"
+                });
+            });
+        }
+
         //Back button. 
         const backButton = document.getElementById("backButton");
         if (backButton) {
@@ -122,17 +138,17 @@ export class UIHandlers {
 
     //Method to toggle button disables. For comments, assume "isDisabled" is set to "true". 
     toggleStimControlDisable(isDisabled) {
-        const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
-        const saveDataButton = document.getElementById("saveDataButton");
-        const backButton = document.getElementById("backButton");
+        // const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
+        // const saveDataButton = document.getElementById("saveDataButton");
+        // const backButton = document.getElementById("backButton");
         
-        if (stimPauseResumeButton) stimPauseResumeButton.disabled = !isDisabled; //Enable the pause button. 
-        if (saveDataButton) saveDataButton.disabled = isDisabled; //Disable the save button. 
-        if (backButton) backButton.disabled = isDisabled; //Disable the back button.
+        // if (stimPauseResumeButton) stimPauseResumeButton.disabled = !isDisabled; //Enable the pause button. 
+        // if (saveDataButton) saveDataButton.disabled = isDisabled; //Disable the save button. 
+        // if (backButton) backButton.disabled = isDisabled; //Disable the back button.
         
-        if (this.stimManager) {
-            this.stimManager.toggleStimControlDisable(isDisabled); //Disable the stim item boxes (no modifications allowed).
-        }
+        // if (this.stimManager) {
+        //     this.stimManager.toggleStimControlDisable(isDisabled); //Disable the stim item boxes (no modifications allowed).
+        // }
     }
 
     //Method to hide the game and port connection buttons. Run after clicking a game or back button. 
@@ -152,35 +168,71 @@ export class UIHandlers {
         gameTitleText = "",
         presetName = null
     } = {}) {
-        this.toggleHideGameButtons(); //Hide the game buttons and the port connection buttons. 
+        // this.toggleHideGameButtons(); //Hide the game buttons and the port connection buttons. 
         
-        const stimGenAndRand = document.getElementById("stimGenAndRand");
-        const gameTitleContainer = document.getElementById("gameTitleContainer");
-        const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
-        const stimStartStopButton = document.getElementById("stimStartStopButton");
-        const saveDataButton = document.getElementById("saveDataButton");
-        const gameTitle = document.getElementById("gameTitle");
+        // const stimGenAndRand = document.getElementById("stimGenAndRand");
+        // const gameTitleContainer = document.getElementById("gameTitleContainer");
+        // const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
+        // const stimStartStopButton = document.getElementById("stimStartStopButton");
+        // const saveDataButton = document.getElementById("saveDataButton");
+        // const gameTitle = document.getElementById("gameTitle");
         
-        if (hideStimGenAndRand !== null && stimGenAndRand) {
-            stimGenAndRand.classList.toggle("hiddenFlex", hideStimGenAndRand); //If you choose custom game, show the stim creator tool. 
-        }
+        // if (hideStimGenAndRand !== null && stimGenAndRand) {
+        //     stimGenAndRand.classList.toggle("hiddenFlex", hideStimGenAndRand); //If you choose custom game, show the stim creator tool. 
+        // }
         
-        if (gameTitleContainer) gameTitleContainer.classList.toggle("hiddenFlex"); //Show or hide the game title. 
-        if (this.calibrationManager) this.calibrationManager.toggleCalibrateButtonVisibility(); //Show or hide the calibrate button. 
-        if (stimPauseResumeButton) stimPauseResumeButton.classList.toggle("hiddenFlex"); //Show or hide the pause button.
-        if (stimStartStopButton) stimStartStopButton.classList.toggle("hiddenFlex"); //Show or hide the start button.
-        if (saveDataButton) saveDataButton.classList.toggle("hiddenFlex"); //Show or hide the save button
-        if (gameTitle) gameTitle.textContent = gameTitleText; //Set the game title. 
+        // if (gameTitleContainer) gameTitleContainer.classList.toggle("hiddenFlex"); //Show or hide the game title. 
+        // if (this.calibrationManager) this.calibrationManager.toggleCalibrateButtonVisibility(); //Show or hide the calibrate button. 
+        // if (stimPauseResumeButton) stimPauseResumeButton.classList.toggle("hiddenFlex"); //Show or hide the pause button.
+        // if (stimStartStopButton) stimStartStopButton.classList.toggle("hiddenFlex"); //Show or hide the start button.
+        // if (saveDataButton) saveDataButton.classList.toggle("hiddenFlex"); //Show or hide the save button
+        // if (gameTitle) gameTitle.textContent = gameTitleText; //Set the game title. 
 
-        if (presetName && this.stimPresets) {
-            this.stimPresets.applyPreset(presetName); //Apply the stim items based on the game. 
-            if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button. 
-            if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items. 
-        }
+        // if (presetName && this.stimPresets) {
+        //     this.stimPresets.applyPreset(presetName); //Apply the stim items based on the game. 
+        //     if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button. 
+        //     // if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items. 
+        // }
         
-        if (gameTitleText === "" && this.stimManager) { //If you click the back button, hide the stim items (game buttons will be in their place).
-            this.stimManager.clearStimItems();
-        }
+        // if (gameTitleText === "" && this.stimManager) { //If you click the back button, hide the stim items (game buttons will be in their place).
+        //     this.stimManager.clearStimItems();
+        // }
+    }
+
+    //Method to handle when a game button or the back button is clicked. 
+    msiHandleGameButtonClick({
+        gameTitleText = "",
+        presetName = null
+    } = {}) {
+        // this.toggleHideGameButtons(); //Hide the game buttons and the port connection buttons. 
+        
+        // const gameTitleContainer = document.getElementById("gameTitleContainer");
+        // const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
+        // const stimStartStopButton = document.getElementById("stimStartStopButton");
+        // const saveDataButton = document.getElementById("saveDataButton");
+        // const gameTitle = document.getElementById("gameTitle");
+        
+        // if (gameTitleContainer) gameTitleContainer.classList.toggle("hiddenFlex"); //Show or hide the game title. 
+        // // if (this.calibrationManager) this.calibrationManager.toggleCalibrateButtonVisibility(); //Show or hide the calibrate button. 
+        // if (stimPauseResumeButton) stimPauseResumeButton.classList.toggle("hiddenFlex"); //Show or hide the pause button.
+        // if (stimStartStopButton) stimStartStopButton.classList.toggle("hiddenFlex"); //Show or hide the start button.
+        // if (saveDataButton) saveDataButton.classList.toggle("hiddenFlex"); //Show or hide the save button
+        // if (gameTitle) gameTitle.textContent = gameTitleText; //Set the game title. 
+
+        // if (presetName && this.stimPresets) {
+        //     this.stimPresets.msiApplyPreset(presetName); //Apply the stim items based on the game. 
+        //     if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button. 
+        //     if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items. 
+        // }
+
+        // if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button. 
+        // if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items. 
+        
+        // if (gameTitleText === "" && this.stimManager) { //If you click the back button, hide the stim items (game buttons will be in their place).
+        //     this.stimManager.clearStimItems();
+        // }
+
+        this.calibrationManager.msiBeginCal(presetName);
     }
 
     async handleImportData(event) { //Import data. Need to use fileInput b/c using vanilla JS. 
@@ -197,7 +249,7 @@ export class UIHandlers {
             resetColorOptions,
             // Need to use arrow function to lock the 'this' context, so 'this.StimManager' will be available.
             (isDisabled) => this.toggleStimControlDisable(isDisabled), 
-            window.updateInterface //This needs to be available globally or passed in.
+            window.updateInterfaceGame //This needs to be available globally or passed in.
         );
     }
 
@@ -208,7 +260,7 @@ export class UIHandlers {
             await this.startSession(); //Start the session. 
         } else { //If the session is running, stop running. 
             for (const [id, state] of this.connectionManager.getPortStates().entries()) { //Check each port state. 
-                stopSerial(id); //Stop the session. 
+                await this.stopSerial(id); //Stop the session. 
                 state.stimEDAValues = []; //Clear values array. 
                 state.stimEDATime = []; //Clear time array. 
             }
@@ -238,7 +290,7 @@ export class UIHandlers {
                 for (const [id, state] of this.connectionManager.getPortStates().entries()) { //Cycle through each port connection. 
                     state.stimEDAValues = []; //Clear the temporary values array. 
                     state.stimEDATime = [];  //Clear the temporary time array. 
-                    await resumeSerial(id, window.updateInterface); //Resume reading from serial. 
+                    await resumeSerial(id, window.updateInterfaceGame); //Resume reading from serial. 
                 }
                 
                 this.stimDisplay.resume(); //Resume the stim display. 
@@ -252,10 +304,12 @@ export class UIHandlers {
             }
         } else {
             for (const [id, state] of this.connectionManager.getPortStates().entries()) { //Cycle through each port connection. 
-                await stopSerial(id); //Stop the serial connection. 
+                await this.stopSerial(id); //Stop the serial connection. 
                 state.stimEDAValues = []; //Clear the temporary values array. 
                 state.stimEDATime = []; //Clear the temporary time array. 
             }
+
+            this.dataProcessor.clearUnifiedCSVData();
             
             this.stimDisplay.pause(); //Pause the stim display. 
             const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
@@ -267,17 +321,37 @@ export class UIHandlers {
         }
     }
 
-    //Method to handle data saving upon clicking the save button. 
+    // Method to handle data saving upon clicking the save button. 
     async handleSaveData() {
-        const sessionStartTime = this.sessionManager.getSessionStartTime(); //Get the session start time. 
+        const sessionStartTime = this.sessionManager.getSessionStartTime(); // Get the session start time. 
         if (sessionStartTime) {
-            await this.dataExporter.saveData( //Save the data. 
+            await this.dataExporter.saveUnifiedData( // Save the unified data. 
                 sessionStartTime, 
-                this.dataProcessor.getSessionCSVData(), //Session CSV data. 
-                this.dataProcessor.getSensorCSVData(), //Sensor CSV data. 
-                this.connectionManager,
+                this.dataProcessor.getUnifiedCSVData(), // Unified CSV data. 
             );
         }
+
+        // Stop streaming from serial
+        for (const [id, state] of this.connectionManager.getPortStates().entries()) {
+            await this.stopSerial(id);
+        }
+        this.clearSerialChart(this.connectionManager); // Clear the cahrt
+
+        this.stimDisplay.running = false;
+        this.stimDisplay.clearOnStimDisplay();
+        this.stimDisplay.stop();
+        this.stimDisplay.resetRound();
+
+        // Clear the notes
+        const notesTextarea = document.getElementById('notes-textarea');
+        notesTextarea.value = '';
+
+        // Reset digipot values and reset current phase
+        this.calibrationManager.hideBreathingCue();
+        this.calibrationManager.resetROff();
+        this.calibrationManager.resetRGain();
+        this.stimAnalyzer.resetThreshold();
+        this.dataProcessor.resetCurrentPhase();
     }
 
     //Getters and setters for state.

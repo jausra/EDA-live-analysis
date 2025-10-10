@@ -160,7 +160,7 @@ export default class CreateStimDisplay{
         this.displayTarget.innerHTML = ''; //Clear the stim previously displayed. 
 
         if(type === 'Word') {
-            this.displayTarget.textContent = value;
+            // this.displayTarget.textContent = value;
 
             //If the word is wider than the available space, scale down its size. 
             const wordWidth = this.displayTarget.scrollWidth;
@@ -257,6 +257,17 @@ export default class CreateStimDisplay{
 
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Redraw the background circle to ensure it's completely cleared
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const radius = 200;
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = "#ddd";
+        ctx.lineWidth = 15;
+        ctx.stroke();
     }
 
     //Method to add a callback to 'this.stimDisplayListeners'
@@ -266,5 +277,9 @@ export default class CreateStimDisplay{
 
     clearOnStimDisplay(){
         this.stimDisplayListeners = [];
+    }
+
+    resetRound() {
+        this.round = 1;
     }
 }

@@ -52,7 +52,8 @@ export class SessionManager {
     //Method to start the session. 
     async startSession(resetColorOptions, toggleStimControlDisable, updateInterface) {
         try {
-            this.initGameCB();
+            // this.initGameCB();
+            // this.initStimDisplayCB();
 
             this.stimDisplay.running = true; //Set the 'running' flag to true. 
             const stimStartStopButton = document.getElementById("stimStartStopButton");
@@ -62,7 +63,7 @@ export class SessionManager {
             
             //Stop the serial connection and clear the serial plot for each port. 
             for (const [id, state] of this.connectionManager.getPortStates().entries()) {
-                this.stopSerial(id);
+                await this.stopSerial(id);
                 // this.clearSerialChart(id);
             }
             this.clearSerialChart(this.connectionManager);
@@ -92,24 +93,75 @@ export class SessionManager {
         }
     }
 
+    //Method to start the session. 
+    async msiStartSession() {
+        try {
+            // this.initGameCB();
+            // this.initStimDisplayCB();
+
+            // this.stimDisplay.running = true; //Set the 'running' flag to true. 
+            // const stimStartStopButton = document.getElementById("stimStartStopButton");
+            // if (stimStartStopButton) {
+            //     stimStartStopButton.disabled = true; //Disable the start button. 
+            // }
+            
+            //Stop the serial connection and clear the serial plot for each port. 
+            // for (const [id, state] of this.connectionManager.getPortStates().entries()) {
+            //     this.stopSerial(id);
+            //     // this.clearSerialChart(id);
+            // }
+            this.clearSerialChart(this.connectionManager);
+
+            this.sessionStartTime = this.formatTimeFilename(new Date(Date.now())); //Set the new session start time. 
+            
+            // this.calibrationManager.hideCalibrationContainer(); //Hide the calibration controls. 
+            // let calContainer = document.getElementById("calContainer");
+            // calContainer.classList.toggle("hiddenFlex", false);
+
+            // await this.showInitialCountdown(); //Show the initial countdown. 
+            // if (stimStartStopButton) {
+            //     stimStartStopButton.disabled = false;
+            //     stimStartStopButton.textContent = "Stop";
+            // }
+
+            // Start the serial reading for each port. 
+            for (const [id, state] of this.connectionManager.getPortStates().entries()) {
+                await this.stopSerial(id);
+                await this.startSerial(id, window.updateInterfaceGame);
+            }
+            // this.stimDisplay.start(); //Start the stim display. 
+        } catch (error) {
+            console.error("Could not read from serial port", error);
+        }
+    }
+
     //Method to show the initial countdown. 
     async showInitialCountdown() {
         await new Promise((resolve) => {
             const displayText = document.getElementById("stimDisplay"); //Get the location of the countdown display. 
             let currentNumber = 3; //Start at "3".
-            displayText.textContent = currentNumber; //Set the text to "3". 
+
+            // Create a container for the countdown if not already present
+            // (Assume displayText is a div or similar)
+            displayText.innerHTML = `
+                <div id="countdownContainer" style="display: flex; flex-direction: column; align-items: center;">
+                    <div id="countdownLabel" style="font-size: 1em; margin-bottom: 0.3em;">Game start in</div>
+                    <div id="countdownNumber" style="font-size: 2em;">${currentNumber}</div>
+                </div>
+            `;
+            const countdownNumber = document.getElementById("countdownNumber");
 
             //Once every second for 3 seconds reduce the currentNumber and display it. 
             const interval = setInterval(() => {
                 currentNumber--;
                 if (currentNumber > 0) {
-                    displayText.textContent = currentNumber;
+                    countdownNumber.textContent = currentNumber;
                 } else {
                     clearInterval(interval);
                     displayText.textContent = '';
                     resolve();
                 }
-            }, 1000);
+            }, 1700);
         });
     }
 

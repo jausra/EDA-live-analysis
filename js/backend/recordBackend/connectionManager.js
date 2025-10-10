@@ -26,18 +26,18 @@ export class ConnectionManager {
             this.handleConnectionMouseLeave(e);
         });
 
-        // Initialize connBox2
-        this.connBox2.addEventListener("click", async (e) => {
-            await this.handleConnectionClick(e, 'sensor2');
-        });
+        // // Initialize connBox2
+        // this.connBox2.addEventListener("click", async (e) => {
+        //     await this.handleConnectionClick(e, 'sensor2');
+        // });
         
-        this.connBox2.addEventListener("mouseenter", (e) => {
-            this.handleConnectionMouseEnter(e);
-        });
+        // this.connBox2.addEventListener("mouseenter", (e) => {
+        //     this.handleConnectionMouseEnter(e);
+        // });
         
-        this.connBox2.addEventListener("mouseleave", (e) => {
-            this.handleConnectionMouseLeave(e);
-        });
+        // this.connBox2.addEventListener("mouseleave", (e) => {
+        //     this.handleConnectionMouseLeave(e);
+        // });
     }
 
     //Method for handling connection/disconnection click. 

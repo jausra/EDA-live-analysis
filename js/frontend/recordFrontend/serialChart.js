@@ -203,7 +203,11 @@ export function updateSerialChartArray(valueArray, timeArray, id) {
     chart.update('none'); // Apply changes to the chart with no animation
 }
 
-document.getElementById("autoscrollSerChartButton").addEventListener("click", () => {
+// document.getElementById("autoscrollSerChartButton").addEventListener("click", () => {
+//     autoscroll = true;
+// });
+
+document.getElementById("resetChartButton").addEventListener("click", () => {
     autoscroll = true;
 });
 

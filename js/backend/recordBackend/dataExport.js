@@ -13,6 +13,23 @@ export class DataExporter {
         return baseColumns.join(',') + '\n'; //Format the headers for CSV compatibility. 
     }
 
+    //Method for generating the headers for the unified CSV files. 
+    generateUnifiedCSVHeaders() {
+        const baseColumns = ['time', 'value', 'gain', 'offset', 'threshold', 'dip', 'phase']; //Create the headers.
+        return baseColumns.join(',') + '\n'; //Format the headers for CSV compatibility. 
+    }
+
+    //Method for generating the CSV structure with notes
+    generateUnifiedCSVWithNotes(notes, headers, data) {
+        let csvContent = '';
+        csvContent += 'Notes\n'; // First row: Notes label
+        csvContent += `"${notes.replace(/"/g, '""')}"\n`; // Second row: Notes content (escape quotes)
+        csvContent += '\n'; // Third row: Empty row
+        csvContent += headers; // Fourth row: Headers
+        csvContent += data; // Fifth row onwards: Data
+        return csvContent;
+    }
+
     //Method for converting an array to CSV format. 
     arrayToCSV(data) {
         return data.map(row => 
@@ -20,7 +37,33 @@ export class DataExporter {
         ).join("\n"); //Add newlines between rows. 
     }
 
-    //Method for saving data
+    //Method for saving unified data
+    async saveUnifiedData(sessionStartTime, unifiedCSVData) {
+        try {
+            // Get the notes from the textarea
+            const notesTextarea = document.getElementById('notes-textarea');
+            const notes = notesTextarea ? notesTextarea.value : '';
+            
+            const rootFolder = await window.showDirectoryPicker(); //Let the user select the folder they want to save the data in. 
+            const sessionFolder = await rootFolder.getDirectoryHandle(sessionStartTime, { create: true }); //Create a sub-folder with the session time. 
+            
+            const unifiedCSVHeaders = this.generateUnifiedCSVHeaders();
+            for (const [id, data] of Object.entries(unifiedCSVData)) {
+                const dataCSV = this.arrayToCSV(data);
+                const fullCSVContent = this.generateUnifiedCSVWithNotes(notes, unifiedCSVHeaders, dataCSV);
+                
+                const unifiedCSVName = `${sessionStartTime}_${id}_unified.csv`; //Name the unified CSV file. 
+                const unifiedCSVFile = await sessionFolder.getFileHandle(unifiedCSVName, { create: true }); //Create the unified CSV file. 
+                const writable = await unifiedCSVFile.createWritable(); //Create a writable stream to the file. 
+                await writable.write(fullCSVContent); //Write the complete CSV content with notes
+                await writable.close(); //Close the stream. 
+            }
+        } catch (error) {
+            console.error("Error saving unified data:", error);
+        }
+    }
+
+    //Method for saving data (legacy)
     async saveData(sessionStartTime, sessionCSVData, sensorCSVData, connectionManager) {
         try {
             const rootFolder = await window.showDirectoryPicker(); //Let the user select the folder they want to save the data in. 

@@ -13,28 +13,73 @@
         <script src="https://cdn.jsdelivr.net/npm/jstat@latest/dist/jstat.min.js"></script>
     </head>
     <body>
-        <header>
-            <h1>
-                EDA Live Viewer
-            </h1>
-        </header>
         <main>
             <div id="container">
                 <div id="leftModal">
                     <div id="stimControl">
                         <div id="stimPanel">
-                            <div id="connContainer">
+                            <!-- <div id="connContainer"> -->
+                            <div id="topContainer">
                                 <div id="connBox1" class="connBox">+</div>
-                                <div id="connBox2" class="connBox">+</div>
+                                <div id="msiNormalGameButton" class="gameButton disabled"> Magic Mode</div>
+                                <div id="msiChallengeGameButton" class="gameButton disabled"> Challenge Mode</div>
+                                <div id="resetChartButton">
+                                    <span style="position: relative; top: -6px;">&#8635;</span>
+                                </div>
+                                <!-- <div id="connBox2" class="connBox">+</div> -->
                             </div>
-                            <div id="gameContainer">
-                                <div id="debugGameButton" class="gameButton disabled"> Debug</div>
-                                <div id="breathingGameButton" class="gameButton disabled"> Breathing Game</div>
-                                <div id="redDotGameButton" class="gameButton disabled"> Red Dot Game</div>
-                                <div id="customGameButton" class="gameButton disabled"> Custom Game</div>
+                            <div id="serialChartContainer">
+                                <canvas id="serialChart" width="500" height="300"></canvas>
                             </div>
-                            <div id="importContainer">
-                                <button id="importButton">
+                            <div id="bottomContainer">
+                                <div id="bottomLeftContainer">
+                                    <div class="calibration-panel calibration-panel--threshold">
+                                        <div class="calibration-panel__left">
+                                            <h2 class="calibration-panel__title" id="threshold-title">Threshold</h2>
+                                            <input type="range" class="calibration-panel__slider" id="threshold-slider" min="0" max="100">
+                                        </div>
+                                        <div class="calibration-panel__right">
+                                            <input type="text" class="calibration-panel__input" id="threshold-input" placeholder="Enter threshold">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="calibration-panel calibration-panel--gain">
+                                        <div class="calibration-panel__left">
+                                            <h2 class="calibration-panel__title" id="gain-title">Gain</h2>
+                                            <input type="range" class="calibration-panel__slider" id="gain-slider" min="0" max="100">
+                                        </div>
+                                        <div class="calibration-panel__right">
+                                            <input type="text" class="calibration-panel__input" id="gain-input" placeholder="Enter gain">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="calibration-panel calibration-panel--offset">
+                                        <div class="calibration-panel__left">
+                                            <h2 class="calibration-panel__title" id="offset-title">Offset</h2>
+                                            <input type="range" class="calibration-panel__slider" id="offset-slider" min="0" max="100">
+                                        </div>
+                                        <div class="calibration-panel__right">
+                                            <input type="text" class="calibration-panel__input" id="offset-input" placeholder="Enter offset">
+                                        </div>
+                                    </div>
+
+                                    <div class="bottom-button" id="offset-recenter">Re-center</div>
+                                </div>
+
+                                <div id="bottomRightContainer">
+                                    <div class="notes-panel">
+                                        <label for="notes-textarea" class="notes-panel__label">Notes:</label>
+                                        <textarea 
+                                            id="notes-textarea" 
+                                            class="notes-panel__textarea" 
+                                            placeholder="Type your notes here..."></textarea>
+                                    </div>
+
+                                    <div class="bottom-button" id="saveDataButton">Save and End</div>
+                                </div>
+                            </div>
+                            <!-- <div id="importContainer">
+                                <button id="importButton" class="hidden">
                                     Import Data
                                 </button>
                                 <input type="file" id="fileInput" webkitdirectory multiple accept=".csv" style="display: none;" />
@@ -67,9 +112,9 @@
                                     <button id="addStimButton" class="hidden">+</button>
                                 </div>
                             </div>
-                            <div id="stimItemContainer"></div>
+                            <div id="stimItemContainer"></div> -->
                         </div>
-                        <div id="displayControlButtons">
+                        <!-- <div id="displayControlButtons">
                             <button id="calibrateButton" class="hiddenFlex" disabled>
                                 Calibrate
                             </button>
@@ -82,13 +127,13 @@
                             <button id="saveDataButton" class="hiddenFlex" disabled>
                                 Save
                             </button>
-                        </div>
+                        </div> -->
                     </div>
                     <button id="leftModalButton">&#9664;</button>
                 </div>
                 <div id="centralModalWrapper">
                     <div id="stimDisplayContainer">
-                        <div id="calContainer" class="hiddenFlex">
+                        <!-- <div id="calContainer" class="hiddenFlex">
                             <div id="calDisplay">
                                 <div class="horFlex">
                                     <p class="calTitle">Offset Resistance:</p>
@@ -113,18 +158,16 @@
                                 <button id="setRMaxButton">Set R_max</button>
                                 <button id="autocalButton">Autocal</button>
                             </div>
-                        </div>
+                        </div> -->
+                        <!-- <div id="stimWrapper" class="hidden"> -->
                         <div id="stimWrapper">
-                            <div id="stimDisplay"></div>
-                            <canvas id="stimRadialGauge" width="500" height="500"></canvas>
+                            <div id="stimDisplay" class="hidden"></div>
+                            <canvas id="stimRadialGauge" width="500" height="500" class="hidden"></canvas>
                         </div>
                     </div>
                 </div>
                 <div id="rightModal" class="collapsed">
                     <div id="result">
-                        <div id="serialChartContainer">
-                            <canvas id="serialChart" width="500px"></canvas>
-                        </div>
                         <div id="sigChartContainer">
                             <canvas id="sigLineChart" width="500px"></canvas>
                         </div>
@@ -142,13 +185,13 @@
                                 <input type="range" class="sigSlider" id="sigLineOverlapSlider">
                             </div>
                             <div class="chartButtonContainer">
-                                <button id="resetSerChartButton">
+                                <!-- <button id="resetSerChartButton">
                                     <span style="position: relative; top: -6px;">&#8635;</span>
-                                </button>
+                                </button> -->
                                 <div class="serChartAutoscrollCluster">
                                     <button id="increaseSerChartAutoscrollWindowButton">▲</button>
                                     <button id="decreaseSerChartAutoscrollWindowButton">▼</button>
-                                    <button id="autoscrollSerChartButton"></button>
+                                    <!-- <button id="autoscrollSerChartButton"></button> -->
                                 </div>
 
                                 <button id="resetSigChartButton">

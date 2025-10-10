@@ -1,5 +1,5 @@
 import CreateStimObject from './backend/stimBackend/stimObject.js';
-import StimManager from './backend/stimBackend/stimManager.js';
+// import StimManager from './backend/stimBackend/stimManager.js';
 import StimPresets from './backend/stimBackend/stimPresets.js';
 import CreateStimDisplay from './frontend/stimFrontend/stimDisplay.js';
 import { initSerialChart, updateSerialChartValue, annotateChartWithStim, annotateChartWithDelta } from './frontend/recordFrontend/serialChart.js';
@@ -18,14 +18,14 @@ import { ChartControls } from './frontend/recordFrontend/chartControls.js';
 //Record Backend. 
 const connectionManager = new ConnectionManager();
 const dataExporter = new DataExporter();
-const stimAnalyzer = new StimAnalyzer(connectionManager);
+const dataProcessor = new DataProcessor();
+const stimAnalyzer = new StimAnalyzer(connectionManager, dataProcessor);
 const roundManager = new RoundManager(connectionManager);
 const dataImporter = new DataImporter(connectionManager, roundManager, stimAnalyzer);
-const dataProcessor = new DataProcessor();
 
 //Stim Backend. 
 const stimObject = new CreateStimObject('random');
-const stimManager = new StimManager(stimObject);
+// const stimManager = new StimManager(stimObject);
 const stimPresets = new StimPresets(stimObject);
 
 //Record Frontend.
@@ -38,17 +38,28 @@ const stimDisplay = new CreateStimDisplay(stimObject);
 
 //Record/Stim Backend.
 const sessionManager = new SessionManager(stimDisplay, connectionManager, roundManager, stimAnalyzer, dataProcessor);
-const calibrationManager = new CalibrationManager(connectionManager, sessionManager, stimPresets, stimDisplay, roundManager);
+const calibrationManager = new CalibrationManager(connectionManager, sessionManager, stimPresets, stimDisplay, roundManager, stimAnalyzer, dataProcessor);
 
 //Record/Stim Frontend.
-const uiHandlers = new UIHandlers(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimManager, stimPresets, dataProcessor);
+// const uiHandlers = new UIHandlers(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimManager, stimPresets, dataProcessor);
+const uiHandlers = new UIHandlers(sessionManager, dataImporter, dataExporter, stimDisplay, connectionManager, calibrationManager, stimPresets, stimAnalyzer, dataProcessor);
 
-//Function to be called every time we record new data. 
-function updateInterface(value, now, id) {
+//Function to be called every time we record new data for calibration. 
+function updateInterfaceCal(value, now, id) {
     updateSerialChartValue(value, now, id);
     dataProcessor.updateBuffer(value, now, id, connectionManager);
+    dataProcessor.updateUnifiedCSVData(value, now, id, connectionManager, stimAnalyzer);
 }
-window.updateInterface = updateInterface;
+window.updateInterfaceCal = updateInterfaceCal;
+
+//Function to be called every time we record new data for the game. 
+function updateInterfaceGame(value, now, id) {
+    updateSerialChartValue(value, now, id);
+    dataProcessor.updateBuffer(value, now, id, connectionManager);
+    stimAnalyzer.analyzeIncomingDatapoint(value, now, id, connectionManager);
+    dataProcessor.updateUnifiedCSVData(value, now, id, connectionManager, stimAnalyzer);
+}
+window.updateInterfaceGame = updateInterfaceGame;
 
 //Function to be called every time we have a new stim. 
 // stimDisplay.onStimDisplay(({ stim, round, color, startTime, stopTime }) => {

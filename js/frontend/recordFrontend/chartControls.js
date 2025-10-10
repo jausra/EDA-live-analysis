@@ -74,15 +74,15 @@ export class ChartControls {
     // Method for initializing the buttons that control the graphs
     setupButtons() {
         // Serial chart zoom out
-        const resetSerChartButton = document.getElementById("resetSerChartButton");
-        resetSerChartButton.addEventListener("click", () => {
-            serChartZoomOut();
-        });
+        // const resetSerChartButton = document.getElementById("resetSerChartButton");
+        // resetSerChartButton.addEventListener("click", () => {
+        //     serChartZoomOut();
+        // });
 
         // Submit new serial chart autoscroll window
-        let serChartAutoscrollWindow = getSerChartAutoscrollWindow();
-        const autoscrollSerChartButton = document.getElementById("autoscrollSerChartButton");
-        autoscrollSerChartButton.innerHTML = `${serChartAutoscrollWindow/1000}s<br><span style="letter-spacing:-4px;">&#9658;&#9658;</span>`;
+        // let serChartAutoscrollWindow = getSerChartAutoscrollWindow();
+        // const autoscrollSerChartButton = document.getElementById("autoscrollSerChartButton");
+        // autoscrollSerChartButton.innerHTML = `${serChartAutoscrollWindow/1000}s<br><span style="letter-spacing:-4px;">&#9658;&#9658;</span>`;
 
         // Increase serial chart autoscroll window
         const increaseSerChartAutoscrollWindowButton = document.getElementById("increaseSerChartAutoscrollWindowButton");

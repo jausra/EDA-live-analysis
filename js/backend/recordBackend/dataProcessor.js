@@ -1,8 +1,16 @@
+import { formatTimeCSV } from '../../utils.js';
+
 //Class to store take incoming EDA data and save it to temporary and long-term arrays. 
 export class DataProcessor {
     constructor() {
         this.sessionCSVData = [];
         this.sensorCSVData = {};
+        this.unifiedCSVData = {};
+        this.currentPhase = 'auto-offset';
+        this.currentGain = 20; // default gain value
+        this.currentOffset = 700; // default offset value
+        this.currentThreshold = 20; // default threshold value
+        this.currentDip = 0; // default dip value
     }
 
     updateSessionCSVData(round, stim, type, startTime, stopTime) {
@@ -14,8 +22,8 @@ export class DataProcessor {
         sessionCSVDataRow.push(round); //Add the round. 
         sessionCSVDataRow.push(stim); //Add the stim. 
         sessionCSVDataRow.push(type); //Add the type of the stim ('Word' or 'Drawing'). 
-        sessionCSVDataRow.push(this.formatTimeCSV(new Date(startTime))); //Add the start time of the stim. 
-        sessionCSVDataRow.push(this.formatTimeCSV(new Date(stopTime))); //Add the stop time of the stim. 
+        sessionCSVDataRow.push(formatTimeCSV(new Date(startTime))); //Add the start time of the stim. 
+        sessionCSVDataRow.push(formatTimeCSV(new Date(stopTime))); //Add the stop time of the stim. 
         this.sessionCSVData.push(sessionCSVDataRow); //Push the row to the csvData array. 
     }
 
@@ -46,19 +54,52 @@ export class DataProcessor {
             }
             
             state.stimEDAValues.push(value); //Add the EDA value to the buffer. 
-            state.stimEDATime.push(this.formatTimeCSV(new Date(now))); //Add the time value to the buffer. 
+            state.stimEDATime.push(formatTimeCSV(new Date(now))); //Add the time value to the buffer. 
         }
     }
 
-    //Method to format the time the EDA value was received. Format is 'YYYY-MM-DD HH:mm:SS.sss'.
-    formatTimeCSV(date) {
-        return date.getFullYear() + '-' +
-            String(date.getMonth() + 1).padStart(2, '0') + '-' +
-            String(date.getDate()).padStart(2, '0') + ' ' +
-            String(date.getHours()).padStart(2, '0') + ':' +
-            String(date.getMinutes()).padStart(2, '0') + ':' +
-            String(date.getSeconds()).padStart(2, '0') + '.' +
-            String(date.getMilliseconds()).padStart(3, '0');
+    //Method to update unified CSV data with all required columns
+    updateUnifiedCSVData(value, now, id, connectionManager, stimAnalyzer) {
+        if (!this.unifiedCSVData[id]) {
+            this.unifiedCSVData[id] = [];
+        }
+
+        const unifiedCSVDataRow = [];
+        unifiedCSVDataRow.push(formatTimeCSV(new Date(now))); // time
+        unifiedCSVDataRow.push(value); // value
+        unifiedCSVDataRow.push(this.currentGain); // gain
+        unifiedCSVDataRow.push(this.currentOffset); // offset
+        unifiedCSVDataRow.push(this.currentThreshold); // threshold
+        unifiedCSVDataRow.push(this.currentDip); // dip
+        unifiedCSVDataRow.push(this.currentPhase); // phase
+        
+        this.unifiedCSVData[id].push(unifiedCSVDataRow);
+
+        // Reset the phase (since changes in gain/threshold/offset should only take one datapoint)
+        if (this.currentPhase == 'manual-offset' || this.currentPhase == 'manual-gain' || this.currentPhase == 'manual-threshold') {
+            this.currentPhase = 'game';
+        }
+    }
+
+    //Methods to update current calibration values
+    updateGain(gain) {
+        this.currentGain = gain;
+    }
+
+    updateOffset(offset) {
+        this.currentOffset = offset;
+    }
+
+    updateThreshold(threshold) {
+        this.currentThreshold = threshold;
+    }
+
+    setPhase(phase) {
+        this.currentPhase = phase;
+    }
+
+    setDip(dipValue) {
+        this.currentDip = dipValue;
     }
 
     //Getter for session CSV data. 
@@ -76,8 +117,22 @@ export class DataProcessor {
         return this.sensorCSVData;
     }
 
+    //Getter for unified CSV data
+    getUnifiedCSVData() {
+        return this.unifiedCSVData;
+    }
+
     //Method to clear the sensor CSV data. 
     clearSensorCSVData() {
         this.sensorCSVData = {};
+    }
+
+    //Method to clear the unified CSV data
+    clearUnifiedCSVData() {
+        this.unifiedCSVData = {};
+    }
+
+    resetCurrentPhase() {
+        this.currentPhase = 'auto-offset';
     }
 }

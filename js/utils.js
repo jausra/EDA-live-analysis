@@ -47,3 +47,14 @@ export const colorMap = {
     'White': 'rgba(255, 255, 255, 0.2)',
     'Black': 'rgba(0, 0, 0, 0.2)',
 };
+
+//Function to format the time the EDA value was received. Format is 'YYYY-MM-DD HH:mm:SS.sss'.
+export function formatTimeCSV(date) {
+    return date.getFullYear() + '-' +
+        String(date.getMonth() + 1).padStart(2, '0') + '-' +
+        String(date.getDate()).padStart(2, '0') + ' ' +
+        String(date.getHours()).padStart(2, '0') + ':' +
+        String(date.getMinutes()).padStart(2, '0') + ':' +
+        String(date.getSeconds()).padStart(2, '0') + '.' +
+        String(date.getMilliseconds()).padStart(3, '0');
+}
