@@ -406,14 +406,8 @@ export class CalibrationManager {
     }
   }
 
-  //Handle clicking the calibration button.
-  async msiBeginCal(presetName) {
+  async msiStartStream() {
     try {
-      clearSigLineChart(); //Clear the significance chart.
-      // this.stimStartStopButton.disabled = false; //Enable the start button
-      // this.calibrateButton.disabled = true; //Disable the clibration button.
-      // this.calContainer.classList.toggle("hiddenFlex", false); //show the calibration sliders/text inputs.
-
       //Reset EDA values and clear charts for all ports.
       for (const [id, state] of this.connectionManager
         .getPortStates()
@@ -423,14 +417,6 @@ export class CalibrationManager {
       }
       clearSerialChart(this.connectionManager);
 
-      this.stimPresets.applyPreset("Calibrate"); // Apply the calibration preset
-
-      this.msiInitCalibrationCB(presetName);
-      this.stimDisplay.running = true;
-
-      // await this.sessionManager.showInitialCountdown();
-
-      //Start serial reading for all ports.
       const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
       for (const [id, state] of this.connectionManager
         .getPortStates()
@@ -438,20 +424,63 @@ export class CalibrationManager {
         await startSerial(id, window.updateInterfaceCal);
         await serialWrite(id, command); //Set the initial cal values
         // Show calibration progress indicator
-        this.showCalibrationProgress();
+        // this.showCalibrationProgress();
         await this.modifyOffset(id, state);
         // Show breathing cue for calibration
-        this.showBreathingCue("calibration");
-        if (this.dataProcessor) this.dataProcessor.setPhase("auto-gain");
+        // this.showBreathingCue("calibration");
+        // if (this.dataProcessor) this.dataProcessor.setPhase("auto-gain");
       }
+    } catch (error) {
+      console.error("Could not read from serial port:", error);
+    }
+  }
 
-      // After calibration is complete, transition to game
-      this.stimDisplay.running = false;
-      this.stimDisplay.clearOnStimDisplay();
-      this.hideCalibrationProgress();
+  //Handle clicking the calibration button.
+  async msiBeginCal(presetName) {
+    try {
+      // clearSigLineChart(); //Clear the significance chart.
+      // // this.stimStartStopButton.disabled = false; //Enable the start button
+      // // this.calibrateButton.disabled = true; //Disable the clibration button.
+      // // this.calContainer.classList.toggle("hiddenFlex", false); //show the calibration sliders/text inputs.
 
-      // Hide calibration breathing cue and show game breathing cue
-      this.hideBreathingCue();
+      // //Reset EDA values and clear charts for all ports.
+      // for (const [id, state] of this.connectionManager
+      //   .getPortStates()
+      //   .entries()) {
+      //   this.connectionManager.resetEDAValues(id);
+      //   // clearSerialChart(id);
+      // }
+      // clearSerialChart(this.connectionManager);
+
+      // this.stimPresets.applyPreset("Calibrate"); // Not used
+
+      // this.msiInitCalibrationCB(presetName); // Not used
+      // this.stimDisplay.running = true;
+
+      // // await this.sessionManager.showInitialCountdown();
+
+      // //Start serial reading for all ports.
+      // const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
+      // for (const [id, state] of this.connectionManager
+      //   .getPortStates()
+      //   .entries()) {
+      //   await startSerial(id, window.updateInterfaceCal);
+      //   await serialWrite(id, command); //Set the initial cal values
+      //   // Show calibration progress indicator
+      //   this.showCalibrationProgress();
+      //   await this.modifyOffset(id, state);
+      //   // Show breathing cue for calibration
+      //   this.showBreathingCue("calibration");
+      //   if (this.dataProcessor) this.dataProcessor.setPhase("auto-gain");
+      // }
+
+      // // After calibration is complete, transition to game
+      // this.stimDisplay.running = false;
+      // this.stimDisplay.clearOnStimDisplay();
+      // this.hideCalibrationProgress();
+
+      // // Hide calibration breathing cue and show game breathing cue
+      // this.hideBreathingCue();
 
       await this.sessionManager.showInitialCountdown();
       this.showBreathingCue("game");
