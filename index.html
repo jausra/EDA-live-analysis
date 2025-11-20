@@ -21,6 +21,7 @@
                             <!-- <div id="connContainer"> -->
                             <div id="topContainer">
                                 <div id="connBox1" class="connBox">+</div>
+                                <div id="connBox2" class="connBox">+</div>
                                 <div id="streamButton" class="gameButton disabled">Stream</div>
                                 <div id="msiNormalGameButton" class="gameButton disabled"> Begin Game</div>
                                 <div id="resetChartButton">
@@ -35,47 +36,69 @@
                                 <div id="bottomLeftContainer">
                                     <div class="calibration-panel calibration-panel--threshold">
                                         <div class="calibration-panel__left">
-                                            <h2 class="calibration-panel__title" id="threshold-title">Threshold</h2>
-                                            <input type="range" class="calibration-panel__slider" id="threshold-slider" min="0" max="100">
+                                            <h2 class="calibration-panel__title" id="threshold-title1">Threshold</h2>
+                                            <input type="range" class="calibration-panel__slider" id="threshold-slider1" min="0" max="100">
                                         </div>
                                         <div class="calibration-panel__right">
-                                            <input type="text" class="calibration-panel__input" id="threshold-input" placeholder="Enter threshold">
+                                            <input type="text" class="calibration-panel__input" id="threshold-input1" placeholder="Enter threshold">
                                         </div>
                                     </div>
                                     
                                     <div class="calibration-panel calibration-panel--gain">
                                         <div class="calibration-panel__left">
-                                            <h2 class="calibration-panel__title" id="gain-title">Gain</h2>
-                                            <input type="range" class="calibration-panel__slider" id="gain-slider" min="0" max="100">
+                                            <h2 class="calibration-panel__title" id="gain-title1">Gain</h2>
+                                            <input type="range" class="calibration-panel__slider" id="gain-slider1" min="0" max="100">
                                         </div>
                                         <div class="calibration-panel__right">
-                                            <input type="text" class="calibration-panel__input" id="gain-input" placeholder="Enter gain">
+                                            <input type="text" class="calibration-panel__input" id="gain-input1" placeholder="Enter gain">
                                         </div>
                                     </div>
                                     
                                     <div class="calibration-panel calibration-panel--offset">
                                         <div class="calibration-panel__left">
-                                            <h2 class="calibration-panel__title" id="offset-title">Offset</h2>
-                                            <input type="range" class="calibration-panel__slider" id="offset-slider" min="0" max="100">
+                                            <h2 class="calibration-panel__title" id="offset-title1">Offset</h2>
+                                            <input type="range" class="calibration-panel__slider" id="offset-slider1" min="0" max="100">
                                         </div>
                                         <div class="calibration-panel__right">
-                                            <input type="text" class="calibration-panel__input" id="offset-input" placeholder="Enter offset">
+                                            <input type="text" class="calibration-panel__input" id="offset-input1" placeholder="Enter offset">
                                         </div>
                                     </div>
 
-                                    <div class="bottom-button" id="offset-recenter">Re-center</div>
+                                    <div class="bottom-button" id="offset-recenter1">Re-center</div>
                                 </div>
 
                                 <div id="bottomRightContainer">
-                                    <div class="notes-panel">
-                                        <label for="notes-textarea" class="notes-panel__label">Notes:</label>
-                                        <textarea 
-                                            id="notes-textarea" 
-                                            class="notes-panel__textarea" 
-                                            placeholder="Type your notes here..."></textarea>
+                                    <div class="calibration-panel calibration-panel--threshold">
+                                        <div class="calibration-panel__left">
+                                            <h2 class="calibration-panel__title" id="threshold-title2">Threshold</h2>
+                                            <input type="range" class="calibration-panel__slider" id="threshold-slider2" min="0" max="100">
+                                        </div>
+                                        <div class="calibration-panel__right">
+                                            <input type="text" class="calibration-panel__input" id="threshold-input2" placeholder="Enter threshold">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="calibration-panel calibration-panel--gain">
+                                        <div class="calibration-panel__left">
+                                            <h2 class="calibration-panel__title" id="gain-title2">Gain</h2>
+                                            <input type="range" class="calibration-panel__slider" id="gain-slider2" min="0" max="100">
+                                        </div>
+                                        <div class="calibration-panel__right">
+                                            <input type="text" class="calibration-panel__input" id="gain-input2" placeholder="Enter gain">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="calibration-panel calibration-panel--offset">
+                                        <div class="calibration-panel__left">
+                                            <h2 class="calibration-panel__title" id="offset-title2">Offset</h2>
+                                            <input type="range" class="calibration-panel__slider" id="offset-slider2" min="0" max="100">
+                                        </div>
+                                        <div class="calibration-panel__right">
+                                            <input type="text" class="calibration-panel__input" id="offset-input2" placeholder="Enter offset">
+                                        </div>
                                     </div>
 
-                                    <div class="bottom-button" id="saveDataButton">Save and End</div>
+                                    <div class="bottom-button" id="offset-recenter2">Re-center</div>
                                 </div>
                             </div>
                             <!-- <div id="importContainer">

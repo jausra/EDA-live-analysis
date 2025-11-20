@@ -34,21 +34,37 @@ export class CalibrationManager {
   //Method to connect to HTML elements.
   initializeElements() {
     this.stimStartStopButton = document.getElementById("stimStartStopButton");
-    // this.calibrateButton = document.getElementById("calibrateButton");
-    // this.calContainer = document.getElementById("calContainer");
-    // this.calOffsetInput = document.getElementById("calOffsetInput");
-    this.calOffsetInput = document.getElementById("offset-input");
-    // this.calOffsetSlider = document.getElementById("calOffsetSlider");
-    this.calOffsetSlider = document.getElementById("offset-slider");
-    // this.calGainInput = document.getElementById("calGainInput");
-    this.calGainInput = document.getElementById("gain-input");
-    // this.calGainSlider = document.getElementById("calGainSlider");
-    this.calGainSlider = document.getElementById("gain-slider");
-    // this.calSubmitButton = document.getElementById("calSubmitButton");
-    // this.setRMinButton = document.getElementById("setRMinButton");
-    // this.setRMaxButton = document.getElementById("setRMaxButton");
-    // this.autocalButton = document.getElementById("autocalButton");
-    this.calResetOffset = document.getElementById("offset-recenter");
+
+    // Port 1 (sensor1) elements
+    this.calOffsetInput1 = document.getElementById("offset-input1");
+    this.calOffsetSlider1 = document.getElementById("offset-slider1");
+    this.calGainInput1 = document.getElementById("gain-input1");
+    this.calGainSlider1 = document.getElementById("gain-slider1");
+    this.calResetOffset1 = document.getElementById("offset-recenter1");
+
+    // Port 2 (sensor2) elements
+    this.calOffsetInput2 = document.getElementById("offset-input2");
+    this.calOffsetSlider2 = document.getElementById("offset-slider2");
+    this.calGainInput2 = document.getElementById("gain-input2");
+    this.calGainSlider2 = document.getElementById("gain-slider2");
+    this.calResetOffset2 = document.getElementById("offset-recenter2");
+
+    // Map port IDs to their UI elements
+    this.portElements = new Map();
+    this.portElements.set("sensor1", {
+      offsetInput: this.calOffsetInput1,
+      offsetSlider: this.calOffsetSlider1,
+      gainInput: this.calGainInput1,
+      gainSlider: this.calGainSlider1,
+      resetButton: this.calResetOffset1,
+    });
+    this.portElements.set("sensor2", {
+      offsetInput: this.calOffsetInput2,
+      offsetSlider: this.calOffsetSlider2,
+      gainInput: this.calGainInput2,
+      gainSlider: this.calGainSlider2,
+      resetButton: this.calResetOffset2,
+    });
   }
 
   //Method to set slider and text input parameters.
@@ -79,17 +95,44 @@ export class CalibrationManager {
     this.lowerTargetDeltaBound =
       this.targetDelta * (1 - this.targetDeltaTolerance);
 
-    this.rOff = this.offsetDefault;
-    this.calOffsetSlider.min = this.offsetMin;
-    this.calOffsetSlider.max = this.offsetMax;
-    this.calOffsetInput.value = this.offsetDefault;
-    this.calOffsetSlider.value = this.offsetDefault;
+    // Store per-port calibration values
+    this.portCalibration = new Map();
 
-    this.rGain = this.gainDefault;
-    this.calGainSlider.min = this.gainMin;
-    this.calGainSlider.max = this.gainMax;
-    this.calGainInput.value = this.gainDefault;
-    this.calGainSlider.value = this.gainDefault;
+    // Initialize calibration values and UI for each port
+    for (const [portId, elements] of this.portElements.entries()) {
+      this.portCalibration.set(portId, {
+        rOff: this.offsetDefault,
+        rGain: this.gainDefault,
+      });
+
+      // Setup sliders
+      elements.offsetSlider.min = this.offsetMin;
+      elements.offsetSlider.max = this.offsetMax;
+      elements.offsetSlider.value = this.offsetDefault;
+      elements.gainSlider.min = this.gainMin;
+      elements.gainSlider.max = this.gainMax;
+      elements.gainSlider.value = this.gainDefault;
+
+      // Setup inputs
+      elements.offsetInput.value = this.offsetDefault;
+      elements.gainInput.value = this.gainDefault;
+    }
+  }
+
+  // Helper method to get calibration values for a port
+  getPortCalibration(portId) {
+    if (!this.portCalibration.has(portId)) {
+      this.portCalibration.set(portId, {
+        rOff: this.offsetDefault,
+        rGain: this.gainDefault,
+      });
+    }
+    return this.portCalibration.get(portId);
+  }
+
+  // Helper method to get UI elements for a port
+  getPortElements(portId) {
+    return this.portElements.get(portId);
   }
 
   voltageToADC(voltage) {
@@ -128,73 +171,101 @@ export class CalibrationManager {
 
   //Method to set up click handlers for buttons/sliders/text inputs.
   setupEventListeners() {
-    //Calibrate button click handler.
-    // this.calibrateButton.addEventListener("click", async () => {
-    //     await this.handleCalibrateClick();
-    // });
+    // Helper function to determine port ID from element ID
+    const getPortIdFromElementId = (elementId) => {
+      if (elementId.includes("1") || elementId === "offset-recenter1") {
+        return "sensor1";
+      } else if (elementId.includes("2") || elementId === "offset-recenter2") {
+        return "sensor2";
+      }
+      return null;
+    };
 
-    //Offset input change handler.
-    this.calOffsetInput.addEventListener("change", async (e) => {
+    // Setup event listeners for port 1
+    this.calOffsetInput1.addEventListener("change", async (e) => {
       const now = Date.now();
-      if (this.stimAnalyzer) this.stimAnalyzer.suppressForCalibration(now);
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor1");
       if (this.dataProcessor) this.dataProcessor.setPhase("manual-offset");
-      await this.handleOffsetInputChange(e);
+      await this.handleOffsetInputChange(e, "sensor1");
     });
 
-    //Offset slider change handler.
-    this.calOffsetSlider.addEventListener("change", async (e) => {
+    this.calOffsetSlider1.addEventListener("change", async (e) => {
       const now = Date.now();
-      if (this.stimAnalyzer) this.stimAnalyzer.suppressForCalibration(now);
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor1");
       if (this.dataProcessor) this.dataProcessor.setPhase("manual-offset");
-      await this.handleOffsetSliderChange(e);
+      await this.handleOffsetSliderChange(e, "sensor1");
     });
 
-    //Gain input change handler.
-    this.calGainInput.addEventListener("change", async (e) => {
+    this.calGainInput1.addEventListener("change", async (e) => {
       const now = Date.now();
-      if (this.stimAnalyzer) this.stimAnalyzer.suppressForCalibration(now);
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor1");
       if (this.dataProcessor) this.dataProcessor.setPhase("manual-gain");
-      await this.handleGainInputChange(e);
+      await this.handleGainInputChange(e, "sensor1");
     });
 
-    //Gain slider change handler.
-    this.calGainSlider.addEventListener("change", async (e) => {
+    this.calGainSlider1.addEventListener("change", async (e) => {
       const now = Date.now();
-      if (this.stimAnalyzer) this.stimAnalyzer.suppressForCalibration(now);
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor1");
       if (this.dataProcessor) this.dataProcessor.setPhase("manual-gain");
-      await this.handleGainSliderChange(e);
+      await this.handleGainSliderChange(e, "sensor1");
     });
 
-    this.calResetOffset.addEventListener("click", async () => {
+    this.calResetOffset1.addEventListener("click", async () => {
       if (this.stimAnalyzer) this.stimAnalyzer.beginCalibrationSuppression();
       if (this.dataProcessor) this.dataProcessor.setPhase("auto-offset");
-      for (const [id, state] of this.connectionManager
-        .getPortStates()
-        .entries()) {
-        await this.modifyOffset(id, state);
+      const state = this.connectionManager.getPortStates().get("sensor1");
+      if (state) {
+        await this.modifyOffset("sensor1", state);
       }
       if (this.dataProcessor) this.dataProcessor.setPhase("game");
     });
 
-    //Submit button click handler.
-    // this.calSubmitButton.addEventListener("click", async () => {
-    //     await this.handleSubmitClick();
-    // });
+    // Setup event listeners for port 2
+    this.calOffsetInput2.addEventListener("change", async (e) => {
+      const now = Date.now();
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor2");
+      if (this.dataProcessor) this.dataProcessor.setPhase("manual-offset");
+      await this.handleOffsetInputChange(e, "sensor2");
+    });
 
-    // //Set R Min button click handler.
-    // this.setRMinButton.addEventListener("click", () => {
-    //     this.handleRMinClick();
-    // });
+    this.calOffsetSlider2.addEventListener("change", async (e) => {
+      const now = Date.now();
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor2");
+      if (this.dataProcessor) this.dataProcessor.setPhase("manual-offset");
+      await this.handleOffsetSliderChange(e, "sensor2");
+    });
 
-    // //Set R Max button click handler.
-    // this.setRMaxButton.addEventListener("click", () => {
-    //     this.handleRMaxClick();
-    // });
+    this.calGainInput2.addEventListener("change", async (e) => {
+      const now = Date.now();
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor2");
+      if (this.dataProcessor) this.dataProcessor.setPhase("manual-gain");
+      await this.handleGainInputChange(e, "sensor2");
+    });
 
-    // //Autocal button click handler.
-    // this.autocalButton.addEventListener("click", async () => {
-    //     await this.handleAutocalClick();
-    // });
+    this.calGainSlider2.addEventListener("change", async (e) => {
+      const now = Date.now();
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.suppressForCalibration(now, "sensor2");
+      if (this.dataProcessor) this.dataProcessor.setPhase("manual-gain");
+      await this.handleGainSliderChange(e, "sensor2");
+    });
+
+    this.calResetOffset2.addEventListener("click", async () => {
+      if (this.stimAnalyzer) this.stimAnalyzer.beginCalibrationSuppression();
+      if (this.dataProcessor) this.dataProcessor.setPhase("auto-offset");
+      const state = this.connectionManager.getPortStates().get("sensor2");
+      if (state) {
+        await this.modifyOffset("sensor2", state);
+      }
+      if (this.dataProcessor) this.dataProcessor.setPhase("game");
+    });
   }
 
   async handleCalStimulus(round) {
@@ -223,16 +294,15 @@ export class CalibrationManager {
           this.calculateTargetRMax(adcMin); //Low ADC corresponds to high wheatstone voltage, which comes from high resistance
           this.calculateTargetRMin(adcMax); //High ADC corresponds to low wheatstone voltage, which comes from low resistance
 
-          this.calculateOffR();
-          this.calculateGainR();
+          // Update calibration for the specific port
+          this.calculateTargetRMax(adcMin, id);
+          this.calculateTargetRMin(adcMax, id);
+          this.calculateOffR(id);
+          this.calculateGainR(id);
 
-          const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-
-          for (const [id, state] of this.connectionManager
-            .getPortStates()
-            .entries()) {
-            await serialWrite(id, command);
-          }
+          const cal = this.getPortCalibration(id);
+          const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+          await serialWrite(id, command);
         }
         state.stimEDAValues = [];
       }
@@ -241,26 +311,25 @@ export class CalibrationManager {
   }
 
   //Method to update the R offset by a ratio
-  async increaseRGainByRatio(ratio) {
-    console.log("Old rGain:", this.rGain);
-    this.rGain = ratio * this.rGain;
-    if (this.rGain > this.gainMax) {
-      this.rGain = this.gainMax;
-    }
-    if (this.rGain < this.gainMin) {
-      this.rGain = this.gainMin;
-    }
-    this.calGainSlider.value = this.rGain;
-    this.calGainInput.value = this.rGain;
+  async increaseRGainByRatio(ratio, portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
 
-    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-    console.log("Updating rOff by ratio:", ratio);
-    console.log("nNewew rGain:", this.rGain);
-    for (const [id, state] of this.connectionManager
-      .getPortStates()
-      .entries()) {
-      await serialWrite(id, command);
+    console.log(`Old rGain for ${portId}:`, cal.rGain);
+    cal.rGain = ratio * cal.rGain;
+    if (cal.rGain > this.gainMax) {
+      cal.rGain = this.gainMax;
     }
+    if (cal.rGain < this.gainMin) {
+      cal.rGain = this.gainMin;
+    }
+    elements.gainSlider.value = cal.rGain;
+    elements.gainInput.value = cal.rGain;
+
+    const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+    console.log(`Updating rGain by ratio for ${portId}:`, ratio);
+    console.log(`New rGain for ${portId}:`, cal.rGain);
+    await serialWrite(portId, command);
   }
 
   async msiHandleCalStimulus(round, presetName) {
@@ -338,46 +407,57 @@ export class CalibrationManager {
   }
 
   async modifyOffset(id, state) {
+    const cal = this.getPortCalibration(id);
+    const elements = this.getPortElements(id);
+
+    // Initialize per-port step counter if needed
+    if (!this._offsetStepCounters) {
+      this._offsetStepCounters = new Map();
+    }
+    if (!this._offsetStepCounters.has(id)) {
+      this._offsetStepCounters.set(id, 0);
+    }
+
     let offsetCalDone = false;
     while (!offsetCalDone) {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       if (state.stimEDAValues.length > 10) {
         let val = state.stimEDAValues[state.stimEDAValues.length - 1];
-        console.table({
-          "state.stimEDAValues.length": state.stimEDAValues.length,
-          val: val,
-          baselineADCTarget: this.baselineADCTarget,
-          baselineADCTargetError: this.baselineADCTargetError,
-          "target - err":
-            this.baselineADCTarget - 255 * this.baselineADCTargetError,
-          "target + err":
-            this.baselineADCTarget + 255 * this.baselineADCTargetError,
-        });
+        // console.table({
+        //   port: id,
+        //   "state.stimEDAValues.length": state.stimEDAValues.length,
+        //   val: val,
+        //   baselineADCTarget: this.baselineADCTarget,
+        //   baselineADCTargetError: this.baselineADCTargetError,
+        //   "target - err":
+        //     this.baselineADCTarget - 255 * this.baselineADCTargetError,
+        //   "target + err":
+        //     this.baselineADCTarget + 255 * this.baselineADCTargetError,
+        // });
 
         // Add variable to control the step frequency
         if (!this.offsetStepEveryN) {
-          this.offsetStepEveryN = 2; // Default to 1 if not set
-        }
-        if (!this._offsetStepCounter) {
-          this._offsetStepCounter = 0;
+          this.offsetStepEveryN = 2; // Default to 2 if not set
         }
 
         let shouldStep = false;
-        this._offsetStepCounter++;
-        if (this._offsetStepCounter >= this.offsetStepEveryN) {
+        let stepCounter = this._offsetStepCounters.get(id);
+        stepCounter++;
+        if (stepCounter >= this.offsetStepEveryN) {
           shouldStep = true;
-          this._offsetStepCounter = 0;
+          stepCounter = 0;
         }
+        this._offsetStepCounters.set(id, stepCounter);
 
         if (val < this.baselineADCTarget - 255 * this.baselineADCTargetError) {
           if (shouldStep) {
-            this.rOff++;
-            if (this.dataProcessor) this.dataProcessor.updateOffset(this.rOff);
-            this.calOffsetSlider.value = this.rOff;
-            this.calOffsetInput.value = this.rOff;
-            console.log("Increasing rOff");
-            const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
+            cal.rOff++;
+            if (this.dataProcessor) this.dataProcessor.updateOffset(cal.rOff);
+            elements.offsetSlider.value = cal.rOff;
+            elements.offsetInput.value = cal.rOff;
+            // console.log(`Increasing rOff for ${id}: ${cal.rOff}`);
+            const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
             await serialWrite(id, command);
           }
         } else if (
@@ -385,21 +465,21 @@ export class CalibrationManager {
           this.baselineADCTarget + 255 * this.baselineADCTargetError
         ) {
           if (shouldStep) {
-            this.rOff--;
-            if (this.dataProcessor) this.dataProcessor.updateOffset(this.rOff);
-            this.calOffsetSlider.value = this.rOff;
-            this.calOffsetInput.value = this.rOff;
-            console.log("Decreasing rOff");
-            const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
+            cal.rOff--;
+            if (this.dataProcessor) this.dataProcessor.updateOffset(cal.rOff);
+            elements.offsetSlider.value = cal.rOff;
+            elements.offsetInput.value = cal.rOff;
+            // console.log(`Decreasing rOff for ${id}: ${cal.rOff}`);
+            const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
             await serialWrite(id, command);
           }
         } else {
-          console.log("Value stable");
+          console.log(`Value stable for ${id}`);
           state.stimEDAValues = [];
           state.stimEDATime = [];
           offsetCalDone = true;
           if (this.stimAnalyzer)
-            this.stimAnalyzer.endCalibrationSuppression(Date.now());
+            this.stimAnalyzer.endCalibrationSuppression(Date.now(), id);
           // this.hideCalibrationProgress();
         }
       }
@@ -417,19 +497,17 @@ export class CalibrationManager {
       }
       clearSerialChart(this.connectionManager);
 
-      const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-      for (const [id, state] of this.connectionManager
-        .getPortStates()
-        .entries()) {
+      // Run operations for all ports simultaneously
+      const portPromises = Array.from(
+        this.connectionManager.getPortStates().entries()
+      ).map(async ([id, state]) => {
+        const cal = this.getPortCalibration(id);
+        const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
         await startSerial(id, window.updateInterfaceCal);
         await serialWrite(id, command); //Set the initial cal values
-        // Show calibration progress indicator
-        // this.showCalibrationProgress();
         await this.modifyOffset(id, state);
-        // Show breathing cue for calibration
-        // this.showBreathingCue("calibration");
-        // if (this.dataProcessor) this.dataProcessor.setPhase("auto-gain");
-      }
+      });
+      await Promise.all(portPromises);
     } catch (error) {
       console.error("Could not read from serial port:", error);
     }
@@ -504,111 +582,107 @@ export class CalibrationManager {
   }
 
   //Handle changes in offset text input.
-  async handleOffsetInputChange(e) {
-    this.rOff = e.target.value;
-    const offsetMin = parseFloat(this.calOffsetSlider.min); //Convert from string to float.
-    const offsetMax = parseFloat(this.calOffsetSlider.max); //Convert from string to float.
+  async handleOffsetInputChange(e, portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+
+    cal.rOff = e.target.value;
+    const offsetMin = parseFloat(elements.offsetSlider.min); //Convert from string to float.
+    const offsetMax = parseFloat(elements.offsetSlider.max); //Convert from string to float.
 
     //Modify the text if it is outside the min/max.
-    if (this.rOff < offsetMin) {
-      this.rOff = offsetMin;
-      e.target.value = this.rOff;
+    if (cal.rOff < offsetMin) {
+      cal.rOff = offsetMin;
+      e.target.value = cal.rOff;
     }
-    if (this.rOff > offsetMax) {
-      this.rOff = offsetMax;
-      e.target.value = this.rOff;
-    }
-
-    if (this.dataProcessor) this.dataProcessor.updateOffset(this.rOff);
-
-    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-    for (const [id, state] of this.connectionManager
-      .getPortStates()
-      .entries()) {
-      await serialWrite(id, command); //Set the initial cal values
+    if (cal.rOff > offsetMax) {
+      cal.rOff = offsetMax;
+      e.target.value = cal.rOff;
     }
 
-    this.calOffsetSlider.value = this.rOff; //Make the slider reflect the text input.
+    if (this.dataProcessor) this.dataProcessor.updateOffset(cal.rOff);
+
+    const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+    await serialWrite(portId, command); //Set the initial cal values
+
+    elements.offsetSlider.value = cal.rOff; //Make the slider reflect the text input.
   }
 
   //Handle changes in offset slider.
-  async handleOffsetSliderChange(e) {
-    this.rOff = e.target.value;
-    const offsetMin = parseFloat(this.calOffsetSlider.min); //Convert from string to float.
-    const offsetMax = parseFloat(this.calOffsetSlider.max); //Convert from string to float.
+  async handleOffsetSliderChange(e, portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+
+    cal.rOff = e.target.value;
+    const offsetMin = parseFloat(elements.offsetSlider.min); //Convert from string to float.
+    const offsetMax = parseFloat(elements.offsetSlider.max); //Convert from string to float.
 
     //Modify the slider if it is outside the min/max.
-    if (this.rOff < offsetMin) {
-      this.rOff = offsetMin;
+    if (cal.rOff < offsetMin) {
+      cal.rOff = offsetMin;
     }
-    if (this.rOff > offsetMax) {
-      this.rOff = offsetMax;
-    }
-
-    if (this.dataProcessor) this.dataProcessor.updateOffset(this.rOff);
-
-    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-    for (const [id, state] of this.connectionManager
-      .getPortStates()
-      .entries()) {
-      await serialWrite(id, command); //Set the initial cal values
+    if (cal.rOff > offsetMax) {
+      cal.rOff = offsetMax;
     }
 
-    this.calOffsetInput.value = this.rOff; //Make the text input reflect the slider.
+    if (this.dataProcessor) this.dataProcessor.updateOffset(cal.rOff);
+
+    const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+    await serialWrite(portId, command); //Set the initial cal values
+
+    elements.offsetInput.value = cal.rOff; //Make the text input reflect the slider.
   }
 
   //Handle changes in gain text input.
-  async handleGainInputChange(e) {
-    this.rGain = Number(e.target.value);
-    const gainMin = parseFloat(this.calGainSlider.min); //Convert from string to float.
-    const gainMax = parseFloat(this.calGainSlider.max); //Convert from string to float.
+  async handleGainInputChange(e, portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+
+    cal.rGain = Number(e.target.value);
+    const gainMin = parseFloat(elements.gainSlider.min); //Convert from string to float.
+    const gainMax = parseFloat(elements.gainSlider.max); //Convert from string to float.
 
     //Modify the text if it is outside the min/max.
-    if (this.rGain < gainMin) {
-      this.rGain = gainMin;
-      e.target.value = this.rGain;
+    if (cal.rGain < gainMin) {
+      cal.rGain = gainMin;
+      e.target.value = cal.rGain;
     }
-    if (this.rGain > gainMax) {
-      this.rGain = gainMax;
-      e.target.value = this.rGain;
-    }
-
-    if (this.dataProcessor) this.dataProcessor.updateGain(this.rGain);
-
-    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-    for (const [id, state] of this.connectionManager
-      .getPortStates()
-      .entries()) {
-      await serialWrite(id, command); //Set the initial cal values
+    if (cal.rGain > gainMax) {
+      cal.rGain = gainMax;
+      e.target.value = cal.rGain;
     }
 
-    this.calGainSlider.value = this.rGain; //Make the slider reflect the text input.
+    if (this.dataProcessor) this.dataProcessor.updateGain(cal.rGain);
+
+    const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+    await serialWrite(portId, command); //Set the initial cal values
+
+    elements.gainSlider.value = cal.rGain; //Make the slider reflect the text input.
   }
 
   //Handle changes in offset slider.
-  async handleGainSliderChange(e) {
-    this.rGain = Number(e.target.value);
-    const gainMin = parseFloat(this.calGainSlider.min); //Convert from string to float.
-    const gainMax = parseFloat(this.calGainSlider.max); //Convert from string to float.
+  async handleGainSliderChange(e, portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+
+    cal.rGain = Number(e.target.value);
+    const gainMin = parseFloat(elements.gainSlider.min); //Convert from string to float.
+    const gainMax = parseFloat(elements.gainSlider.max); //Convert from string to float.
 
     //Modify the slider if it is outside the min/max.
-    if (this.rGain < gainMin) {
-      this.rGain = gainMin;
+    if (cal.rGain < gainMin) {
+      cal.rGain = gainMin;
     }
-    if (this.rGain > gainMax) {
-      this.rGain = gainMax;
-    }
-
-    if (this.dataProcessor) this.dataProcessor.updateGain(this.rGain);
-
-    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-    for (const [id, state] of this.connectionManager
-      .getPortStates()
-      .entries()) {
-      await serialWrite(id, command); //Set the initial cal values
+    if (cal.rGain > gainMax) {
+      cal.rGain = gainMax;
     }
 
-    this.calGainInput.value = this.rGain; //Make the text input reflect the slider.
+    if (this.dataProcessor) this.dataProcessor.updateGain(cal.rGain);
+
+    const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+    await serialWrite(portId, command); //Set the initial cal values
+
+    elements.gainInput.value = cal.rGain; //Make the text input reflect the slider.
   }
 
   //Method to send the offset and gain values to the arduino.
@@ -635,12 +709,13 @@ export class CalibrationManager {
     }
   }
 
-  calculateTargetR(adcOut) {
+  calculateTargetR(adcOut, portId) {
+    const cal = this.getPortCalibration(portId);
     const vOut = 3.3 * (adcOut / 255.0);
-    // const rTarget = (this.rOff*(1.65*(this.rGain+10) - 10*vTarget)/(10*vTarget + 1.65*(this.rGain-10)));
+    // const rTarget = (cal.rOff*(1.65*(cal.rGain+10) - 10*vTarget)/(10*vTarget + 1.65*(cal.rGain-10)));
     const rTarget =
-      (this.rOff * (this.rGainLittle * (1.65 - vOut) + 1.65 * this.rGain)) /
-      (this.rGainLittle * (vOut - 1.65) + 1.65 * this.rGain);
+      (cal.rOff * (this.rGainLittle * (1.65 - vOut) + 1.65 * cal.rGain)) /
+      (this.rGainLittle * (vOut - 1.65) + 1.65 * cal.rGain);
 
     return rTarget;
   }
@@ -654,9 +729,15 @@ export class CalibrationManager {
     console.log("this.rMin: ", this.rMin);
   }
 
-  calculateTargetRMin(adcOut) {
-    this.rMin = this.calculateTargetR(adcOut);
-    console.log("Smallest resistance:", this.rMin);
+  calculateTargetRMin(adcOut, portId) {
+    if (!this.portRMin) {
+      this.portRMin = new Map();
+    }
+    this.portRMin.set(portId, this.calculateTargetR(adcOut, portId));
+    console.log(
+      `Smallest resistance for ${portId}:`,
+      this.portRMin.get(portId)
+    );
   }
 
   handleRMaxClick() {
@@ -668,51 +749,65 @@ export class CalibrationManager {
     console.log("this.rMax: ", this.rMax);
   }
 
-  calculateTargetRMax(adcOut) {
-    this.rMax = this.calculateTargetR(adcOut);
-    console.log("Largest resistance:", this.rMax);
+  calculateTargetRMax(adcOut, portId) {
+    if (!this.portRMax) {
+      this.portRMax = new Map();
+    }
+    this.portRMax.set(portId, this.calculateTargetR(adcOut, portId));
+    console.log(`Largest resistance for ${portId}:`, this.portRMax.get(portId));
   }
 
-  calculateOffR() {
-    this.rOff = Math.sqrt(this.rMin * this.rMax);
-    // this.rOff = Math.min(this.rOff, 2000.00);
-    this.rOff = Math.min(this.rOff, 4000.0);
-    this.rOff = Math.max(this.rOff, 4.0);
-    console.log("rOff:", this.rOff);
-    this.calOffsetSlider.value = this.rOff;
-    this.calOffsetInput.value = this.rOff;
+  calculateOffR(portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+    const rMin = this.portRMin ? this.portRMin.get(portId) : null;
+    const rMax = this.portRMax ? this.portRMax.get(portId) : null;
+
+    if (rMin && rMax) {
+      cal.rOff = Math.sqrt(rMin * rMax);
+      // cal.rOff = Math.min(cal.rOff, 2000.00);
+      cal.rOff = Math.min(cal.rOff, 4000.0);
+      cal.rOff = Math.max(cal.rOff, 4.0);
+      console.log(`rOff for ${portId}:`, cal.rOff);
+      elements.offsetSlider.value = cal.rOff;
+      elements.offsetInput.value = cal.rOff;
+    }
   }
 
-  calculateGainR() {
-    // this.rGain = -5.5/(1.65-3.3*(this.rMin/(this.rMin+this.rOff)));
-    // this.rGain = -5.5/(1.65-3.3*(this.rMax/(this.rMax+this.rOff))); //rGainLittle = 10k
-    // this.rGain = (-0.55*this.rGainLittle)/(1.65-3.3*(this.rMax/(this.rMax+this.rOff)));
-    this.rGain =
-      ((this.desiredLowerVoltage - 1.65) * this.rGainLittle) /
-      (1.65 - 3.3 * (this.rMax / (this.rMax + this.rOff)));
-    // this.rGain = Math.min(this.rGain, 100.00);
-    this.rGain = Math.min(this.rGain, 200.0);
-    this.rGain = Math.max(this.rGain, 0.4);
-    console.log("rGain:", this.rGain);
-    this.calGainSlider.value = this.rGain;
-    this.calGainInput.value = this.rGain;
+  calculateGainR(portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+    const rMax = this.portRMax ? this.portRMax.get(portId) : null;
+
+    if (rMax) {
+      // cal.rGain = -5.5/(1.65-3.3*(rMin/(rMin+cal.rOff)));
+      // cal.rGain = -5.5/(1.65-3.3*(rMax/(rMax+cal.rOff))); //rGainLittle = 10k
+      // cal.rGain = (-0.55*this.rGainLittle)/(1.65-3.3*(rMax/(rMax+cal.rOff)));
+      cal.rGain =
+        ((this.desiredLowerVoltage - 1.65) * this.rGainLittle) /
+        (1.65 - 3.3 * (rMax / (rMax + cal.rOff)));
+      // cal.rGain = Math.min(cal.rGain, 100.00);
+      cal.rGain = Math.min(cal.rGain, 200.0);
+      cal.rGain = Math.max(cal.rGain, 0.4);
+      console.log(`rGain for ${portId}:`, cal.rGain);
+      elements.gainSlider.value = cal.rGain;
+      elements.gainInput.value = cal.rGain;
+    }
   }
 
-  async handleAutocalClick() {
-    console.log("rMin:", this.rMin);
-    console.log("rMax:", this.rMax);
+  async handleAutocalClick(portId) {
+    const rMin = this.portRMin ? this.portRMin.get(portId) : null;
+    const rMax = this.portRMax ? this.portRMax.get(portId) : null;
+    console.log(`rMin for ${portId}:`, rMin);
+    console.log(`rMax for ${portId}:`, rMax);
 
-    this.calculateOffR();
-    this.calculateGainR();
+    if (rMin && rMax) {
+      this.calculateOffR(portId);
+      this.calculateGainR(portId);
 
-    const command = `SET R_OFF ${this.rOff} R_GAIN ${this.rGain}\n`;
-
-    //Send the command to each port.
-    //To-Do: modify to send sepcific commends to individual ports.
-    for (const [id, state] of this.connectionManager
-      .getPortStates()
-      .entries()) {
-      await serialWrite(id, command);
+      const cal = this.getPortCalibration(portId);
+      const command = `SET R_OFF ${cal.rOff} R_GAIN ${cal.rGain}\n`;
+      await serialWrite(portId, command);
     }
   }
 
@@ -737,16 +832,20 @@ export class CalibrationManager {
   //     this.calContainer.classList.toggle("hiddenFlex", true);
   // }
 
-  resetROff() {
-    this.rOff = this.offsetDefault;
-    this.calOffsetSlider.value = this.rOff;
-    this.calOffsetInput.value = this.rOff;
+  resetROff(portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+    cal.rOff = this.offsetDefault;
+    elements.offsetSlider.value = cal.rOff;
+    elements.offsetInput.value = cal.rOff;
   }
 
-  resetRGain() {
-    this.rGain = this.gainDefault;
-    this.calGainSlider.value = this.rGain;
-    this.calGainInput.value = this.rGain;
+  resetRGain(portId) {
+    const cal = this.getPortCalibration(portId);
+    const elements = this.getPortElements(portId);
+    cal.rGain = this.gainDefault;
+    elements.gainSlider.value = cal.rGain;
+    elements.gainInput.value = cal.rGain;
   }
 
   showBreathingCue(phase) {
