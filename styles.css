@@ -1,558 +1,560 @@
 * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-html, body {
-    font-family: Arial, Helvetica, sans-serif;
-    height: 98%;
-    width: 100%;
+html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  height: 98%;
+  width: 100%;
 }
 
 main {
-    /* display: flex;
+  /* display: flex;
     align-items: center;
     justify-content: center;
     border: solid blue;
     height: 94%; */
-    height: 100%;
+  height: 100%;
 }
 
 header {
-    margin-top: 10px;
-    margin-bottom: -10px;
-    text-align: center;
+  margin-top: 10px;
+  margin-bottom: -10px;
+  text-align: center;
 }
 
 header h1 {
-    font-weight: 900;
-    font-size: 32px;
+  font-weight: 900;
+  font-size: 32px;
 }
 
 #container {
-    display: flex;
-    /* align-items: center;
+  display: flex;
+  /* align-items: center;
     justify-content: center; */
-    /* border: solid blue; */
-    height: 100%;
+  /* border: solid blue; */
+  height: 100%;
 }
 
 #leftModal {
-    background-color: #558ec0;
-    border-radius: 20px;
-    margin: 20px;
-    height: 99%;
-    /* width: 50%; */ 
-    width: 45%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    transition: width 0.5s linear;
+  background-color: #558ec0;
+  border-radius: 20px;
+  margin: 20px;
+  height: 99%;
+  /* width: 50%; */
+  width: 45%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: width 0.5s linear;
 }
 
 #leftModal.collapsed {
-    width: 30px;
+  width: 30px;
 }
 
 #stimControl {
-    display: flex;
-    flex-direction: column;
-    align-Items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    transition: opacity 0.3s ease;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  transition: opacity 0.3s ease;
+  position: relative;
 }
 
 #stimPanel {
-    position: absolute;
-    height: 100%;
-    width: 100%;
-    display: flex;
-    /* justify-content: space-between; */
-    gap: 20px;
-    flex-direction: column;
-    align-items: center;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  /* justify-content: space-between; */
+  gap: 20px;
+  flex-direction: column;
+  align-items: center;
 }
 
 #connContainer {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 100%;
-    height: 15%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+  height: 15%;
 }
 
 #topContainer {
-    /* flex: 1; */
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    gap: 20px;
-    /* padding-left: 40px;
+  /* flex: 1; */
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 20px;
+  /* padding-left: 40px;
     padding-right: 40px; */
-    padding-top: 40px;
-    width: 90%;
-    /* height: 15%; */
-    flex: 0.5;
+  padding-top: 40px;
+  width: 90%;
+  /* height: 15%; */
+  flex: 0.5;
 }
 
 .connBox {
-    height: 100px;
-    width: 100px;
-    background-color: #bfbfbf;
-    /* margin: 20px; */
-    text-align: center;
-    font-size: 100px;
-    line-height: 1;
-    border-radius: 20px;
+  height: 100px;
+  width: 100px;
+  background-color: #bfbfbf;
+  /* margin: 20px; */
+  text-align: center;
+  font-size: 100px;
+  line-height: 1;
+  border-radius: 20px;
 }
 
-.connBox:hover { 
-    background-color: lightblue;
-    cursor: pointer;
+.connBox:hover {
+  background-color: lightblue;
+  cursor: pointer;
 }
 
 .gameButton {
-    display: flex;
-    flex: 1;
-    height: 100px;
-    background-color: lightblue;
-    border-radius: 20px;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    font-weight: bold;
+  display: flex;
+  flex: 1;
+  height: 100px;
+  background-color: lightblue;
+  border-radius: 20px;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
 }
 
 #resetChartButton {
-    height: 100px;
-    width: 100px;
-    background-color: #bfbfbf;
-    /* margin: 20px; */
-    text-align: center;
-    font-size: 100px;
-    line-height: 1;
-    border-radius: 20px;
+  height: 100px;
+  width: 100px;
+  background-color: #bfbfbf;
+  /* margin: 20px; */
+  text-align: center;
+  font-size: 100px;
+  line-height: 1;
+  border-radius: 20px;
 }
 
-#resetChartButton:hover { 
-    background-color: lightblue;
-    cursor: pointer;
+#resetChartButton:hover {
+  background-color: lightblue;
+  cursor: pointer;
 }
 
 #serialChartContainer {
-    /* flex: 2; */
-    width: 90%;
-    /* height: 40%; */
-    flex: 2;
-    /* margin: 15px; */
-    background-color: #f5f5f5;
-    overflow: hidden;
-    border-radius: 15px;
-    padding: 20px 10px 10px 20px;
-    border-width: 8px;
+  /* flex: 2; */
+  width: 90%;
+  /* height: 40%; */
+  flex: 2;
+  /* margin: 15px; */
+  background-color: #f5f5f5;
+  overflow: hidden;
+  border-radius: 15px;
+  padding: 20px 10px 10px 20px;
+  border-width: 8px;
 }
 
 #bottomContainer {
-    display: flex;
-    flex-direction: row;
-    /* height: 40%; */
-    flex: 1.5;
-    min-height: 100px;
-    margin-bottom: 40px;
-    width: 90%;
+  display: flex;
+  flex-direction: row;
+  /* height: 40%; */
+  flex: 1.5;
+  min-height: 100px;
+  margin-bottom: 40px;
+  width: 90%;
 }
 
 #bottomLeftContainer {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    align-items: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  align-items: center;
 }
-  
+
 /* Each individual panel */
 .calibration-panel {
-    flex: 3;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 20px;
-    width: 100%;
-    /* height: 300px; */
+  flex: 3;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+  /* height: 300px; */
 }
-  
+
 /* Left column: title and slider stacked */
 .calibration-panel__left {
-    flex: 7 7;
-    display: flex;
-    flex-direction: column;
+  flex: 7 7;
+  display: flex;
+  flex-direction: column;
 }
-  
+
 /* Optional: title styling */
 .calibration-panel__title {
-    margin-bottom: 8px;
-    font-size: 1.1rem;
+  margin-bottom: 8px;
+  font-size: 1.1rem;
 }
-  
+
 /* Optional: size of slider */
 .calibration-panel__slider {
-    width: 100%;
+  width: 100%;
 }
-  
+
 /* Right column: text input */
 .calibration-panel__right {
-    flex: 3 3 100px;
-    height: 100%;
-    display: flex;
-    align-items: center;
+  flex: 3 3 100px;
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
-  
+
 .calibration-panel__input {
-    width: 100%;
-    padding: 6px;
+  width: 100%;
+  padding: 6px;
 }
 
 .bottom-button {
-    display: flex;
-    flex: 1;
-    width: 200px;
-    background-color: lightblue;
-    border-radius: 20px;
-    justify-content: center;
-    align-items: center;
-    font-size: 24px;
-    font-weight: bold;
-    margin-top: 10px;
+  display: flex;
+  flex: 1;
+  width: 200px;
+  background-color: lightblue;
+  border-radius: 20px;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-top: 10px;
 }
 
 .bottom-button:hover {
-   cursor: pointer;
-   background-color: #90c0e0;
+  cursor: pointer;
+  background-color: #90c0e0;
 }
 
 #bottomRightContainer {
-    flex: 1;
-    padding-top: 20px;
-    padding-left: 20px;
-    padding-right: 20px;
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-    align-items: center;
+  flex: 1;
+  padding-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
 }
 
 .notes-panel {
-    flex: 7;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    /* padding: 16px; */
-    /* max-width: 600px;  */
-    width: 100%;
-    margin-bottom: 10px;;
+  flex: 7;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* padding: 16px; */
+  /* max-width: 600px;  */
+  width: 100%;
+  margin-bottom: 10px;
 }
-  
+
 .notes-panel__label {
-    flex: 1;
-    font-weight: 600;
-    font-size: 1.1rem;
+  flex: 1;
+  font-weight: 600;
+  font-size: 1.1rem;
 }
-  
+
 .notes-panel__textarea {
-    flex: 5;
-    width: 100%;
-    /* min-height: 200px; */
-    font-size: 1rem;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    resize: vertical; /* allows user to resize vertically */
-    box-sizing: border-box;
+  flex: 5;
+  width: 100%;
+  /* min-height: 200px; */
+  font-size: 1rem;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  resize: vertical; /* allows user to resize vertically */
+  box-sizing: border-box;
 }
 
 #folderBox {
-    height: 100px;
-    width: 100px;
-    background-color: #bfbfbf;
-    margin: 5%;
-    text-align: center;
-    font-size: 100px;
-    line-height: 1;
+  height: 100px;
+  width: 100px;
+  background-color: #bfbfbf;
+  margin: 5%;
+  text-align: center;
+  font-size: 100px;
+  line-height: 1;
 }
 
-#folderBox:hover { 
-    background-color: lightblue;
-    cursor: pointer;
+#folderBox:hover {
+  background-color: lightblue;
+  cursor: pointer;
 }
 
-.connected { 
-    background-color: green;
+.connected {
+  background-color: green;
 }
 
-.connected:hover { 
-    background-color: red;
+.connected:hover {
+  background-color: red;
 }
 
 .gameButton:hover {
-    cursor: pointer;
-    background-color: #90c0e0;
+  cursor: pointer;
+  background-color: #90c0e0;
 }
 
 .gameButton.disabled {
-    pointer-events: none;
-    opacity: 0.5;
-    cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 #importContainer {
-    display: flex;
+  display: flex;
 }
 
 #importButton {
-    font-size: 24px;
-    font-weight: 500;
-    padding: 5px 12px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
-    margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: 500;
+  padding: 5px 12px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-bottom: 20px;
 }
 
 #importButton:hover {
-    cursor: pointer;
-    background-color: #90c0e0;
+  cursor: pointer;
+  background-color: #90c0e0;
 }
 
 #gameTitleContainer {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    align-items: center;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
 }
 
 #backButton {
-    padding: 10px 20px;
-    margin-left: 2.5%;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
+  padding: 10px 20px;
+  margin-left: 2.5%;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
 }
 
 #backButton:hover {
-    cursor: pointer;
+  cursor: pointer;
 }
 
 #gameTitleSpacer {
-    display: flex;
-    justify-content: center;
-    flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  flex-grow: 1;
 }
 
 #gameTitle {
-    text-align: center;
-    font-size: 36px;
-    font-weight: 900;
+  text-align: center;
+  font-size: 36px;
+  font-weight: 900;
 }
 
 #stimGenAndRand {
-    display: flex;
-    width: 95%;
-    height: 120px;
-    margin: 20px 0 15px 0;
+  display: flex;
+  width: 95%;
+  height: 120px;
+  margin: 20px 0 15px 0;
 }
 
 .hiddenFlex {
-    /* display: flex none; */
-    display: none !important;
+  /* display: flex none; */
+  display: none !important;
 }
 
 #stimGenerator {
-    /* width: 90%;
+  /* width: 90%;
     height: 120px;
     margin: 20px 0; */
-    width: 80%;
-    height: 100%;
-    /* margin-right: 20px; */
-    border-radius: 10px;
-    background-color: #0277BD;
-    display: flex;
-    flex-wrap: wrap;
-    align-Items: center;
-    justify-content: center;
-    margin-left: auto;
+  width: 80%;
+  height: 100%;
+  /* margin-right: 20px; */
+  border-radius: 10px;
+  background-color: #0277bd;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
 }
 
-#stimGenerator select, input {
-    margin: 0 8px;
-    text-align: center;
-    padding: 10px 14px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: white;
-    font-size: 16px;
+#stimGenerator select,
+input {
+  margin: 0 8px;
+  text-align: center;
+  padding: 10px 14px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 16px;
 }
 
 .hidden {
-    display: none;
-    /* display: none !important; */
+  display: none;
+  /* display: none !important; */
 }
 
 #stimRandomizerButton {
-    width: 120px;
-    height: 120px;
-    border-radius: 10px;
-    background-color: #e1c93f;
-    border: none;
-    text-align: center;
-    font-size: 20px;
-    font-weight: 700;
-    line-height: 30px;
+  width: 120px;
+  height: 120px;
+  border-radius: 10px;
+  background-color: #e1c93f;
+  border: none;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 30px;
 }
 
 #addStimButton {
-    font-size: 24px;
-    font-weight: 500;
-    padding: 5px 12px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+  font-size: 24px;
+  font-weight: 500;
+  padding: 5px 12px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
 }
 
 #stimItemContainer {
-    width: 100%;
-    /* height: 100%; */
-    display: flex;
-    align-Items: flex-start;
-    justify-content: center;
-    overflow: scroll;
-    flex-wrap: wrap;
+  width: 100%;
+  /* height: 100%; */
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: scroll;
+  flex-wrap: wrap;
 }
 
 #stimItemContainer input {
-    margin: 0 8px;
-    width: 40px;
-    text-align: center;
-    padding: 5px 9px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: white;
-    font-size: 16px;
+  margin: 0 8px;
+  width: 40px;
+  text-align: center;
+  padding: 5px 9px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 16px;
 }
 
 .stimItem {
-    display: flex;
-    flex-direction: column;
-    align-Items: center;
-    justify-content: center;
-    width: 205px;
-    height: 205px;
-    margin: 10px;
-    border-radius: 10px;
-    background-color: #0277BD;
-    flex: 0 0 auto;
-    
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 205px;
+  height: 205px;
+  margin: 10px;
+  border-radius: 10px;
+  background-color: #0277bd;
+  flex: 0 0 auto;
+
+  position: relative;
 }
 
 .stimItemValue {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 48px;
-    font-weight: 900;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 48px;
+  font-weight: 900;
 }
 
 .stimItemTime {
-    position: absolute;
-    top: 90%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: 500;
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .stimItemRatio {
-    position: absolute;
-    top: 10%;
-    left: 10%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: 500;
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .stimItemOrder {
-    position: absolute;
-    top: 10%;
-    left: 47%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: 500;
+  position: absolute;
+  top: 10%;
+  left: 47%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 500;
 }
 
 .deleteStimButton {
-    position: absolute;
-    top: 10%;
-    left: 90%;
-    transform: translate(-50%, -50%);
-    font-size: 24px;
-    font-weight: 500;
-    padding: 5px;
-    background-color: #0277BD;
-    border: none;
-    border-radius: 3px;
-    cursor: pointer;
+  position: absolute;
+  top: 10%;
+  left: 90%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  font-weight: 500;
+  padding: 5px;
+  background-color: #0277bd;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
 }
 
 .deleteStimButton:hover {
-    background-color: #558ec0;
+  background-color: #558ec0;
 }
 
 #displayControlButtons {
-    position: absolute;
-    top: 90%;
-    display: flex;
-    flex-direction: row;
+  position: absolute;
+  top: 90%;
+  display: flex;
+  flex-direction: row;
 }
 
 #calibrateButton {
-    padding: 10px 20px;
-    margin: 20px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
+  padding: 10px 20px;
+  margin: 20px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
 }
 
 #stimStartStopButton {
-    padding: 10px 20px;
-    margin: 20px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
+  padding: 10px 20px;
+  margin: 20px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
 }
 
 #stimPauseResumeButton {
-    padding: 10px 20px;
-    margin: 20px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
+  padding: 10px 20px;
+  margin: 20px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
 }
 
 /* #saveDataButton {
@@ -564,316 +566,314 @@ header h1 {
     font-size: 20px;
 } */
 
-#leftModal.collapsed #stimControl{
-    opacity: 0;
+#leftModal.collapsed #stimControl {
+  opacity: 0;
 }
 
 #leftModalButton {
-    position: absolute;
-    top: 50%;
-    left: 100%;
-    transform: translate(-100%, -50%);
-    border: none;
-    background-color: white;
-    padding: 6px;
-    z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  transform: translate(-100%, -50%);
+  border: none;
+  background-color: white;
+  padding: 6px;
+  z-index: 1;
 }
 
 #centralModalWrapper {
-    flex: 1;
-    margin-top: 20px;
-    margin-left: 20px;
-    margin-right: 20px;
-    margin-bottom: -11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    position: relative;
+  flex: 1;
+  margin-top: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  margin-bottom: -11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
 }
 
 #stimDisplayContainer {
-    position: relative;
-    background-color: #000;
-    height: 100%;
-    width: 100%;
-    border-radius: 20px;
-    transition: width 0.5s linear;
+  position: relative;
+  background-color: #558ec0;
+  height: 100%;
+  width: 100%;
+  border-radius: 20px;
+  transition: width 0.5s linear;
 
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-#centralModalWrapper.shifted #stimDisplayContainer{
-    width: 50%;
+#centralModalWrapper.shifted #stimDisplayContainer {
+  width: 50%;
 }
 
 #calContainer {
-    height: 50%;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  height: 50%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 #calDisplay {
-    display: flex;
-    flex-direction: column;
-    width: 90%;
+  display: flex;
+  flex-direction: column;
+  width: 90%;
 }
 
 .horFlex {
-    display: flex;
-    justify-content: space-between;
-    margin: 30px 0 0 0;
+  display: flex;
+  justify-content: space-between;
+  margin: 30px 0 0 0;
 }
 
 .calTitle {
-    font-size: 20px;
-    font-weight: 900;
+  font-size: 20px;
+  font-weight: 900;
 }
 
 .calInput {
-    display: flex;
-    align-items: center;
+  display: flex;
+  align-items: center;
 }
 
 #calOffsetInput {
-    align-self: end;
-    height: 20px;
-    width: 100px;
-    border-radius: 0;
+  align-self: end;
+  height: 20px;
+  width: 100px;
+  border-radius: 0;
 }
 
 .calInputUnit {
-    align-self: end;
-    font-size: 20px;
-    font-weight: 900;
+  align-self: end;
+  font-size: 20px;
+  font-weight: 900;
 }
 
 .calSlider {
-    width: 100%;
-    margin: 0 10px 0 0;
-    /* border: solid red; */
+  width: 100%;
+  margin: 0 10px 0 0;
+  /* border: solid red; */
 }
 
 #calGainInput {
-    align-self: end;
-    height: 20px;
-    width: 100px;
-    border-radius: 0;
+  align-self: end;
+  height: 20px;
+  width: 100px;
+  border-radius: 0;
 }
 
 #calSubmitButton {
-    width: 100px;
-    padding: 10px 20px;
-    margin: 20px 0;
-    background-color: lightblue;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
-    z-index: 2;
+  width: 100px;
+  padding: 10px 20px;
+  margin: 20px 0;
+  background-color: lightblue;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  z-index: 2;
 }
 
 #calStartButton {
-    width: 100px;
-    padding: 10px 20px;
-    margin-bottom: 20px;
-    background-color: lightblue;
-    border: none;
-    border-radius: 5px;
-    font-size: 20px;
-    z-index: 2;
+  width: 100px;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+  background-color: lightblue;
+  border: none;
+  border-radius: 5px;
+  font-size: 20px;
+  z-index: 2;
 }
 
 #setRMinButton {
-    z-index: 2;
+  z-index: 2;
 }
 
 #setRMaxButton {
-    z-index: 2;
+  z-index: 2;
 }
 
 #autocalButton {
-    z-index: 2;
+  z-index: 2;
 }
 
 #stimWrapper {
-    position: relative;
-    width: 500px;
-    height: 500px;
-    margin-top: 20px;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  margin-top: 20px;
 }
 
 #stimDisplay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    height: 150px;
-    width: 380px;
-    font-size: 70px;
-    font-weight: 900;
-    color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 150px;
+  width: 380px;
+  font-size: 70px;
+  font-weight: 900;
+  color: white;
 }
 
 #stimRadialGauge {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    height: 500px;
-    width: 500px;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  height: 500px;
+  width: 500px;
 }
 
 #rightModal {
-    background-color: #558ec0;
-    border-radius: 20px;
-    margin: 20px;
-    height: 99%;
-    /* width: 50%; */
-    width: 45%;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    transition: width 0.5s linear;
+  background-color: #558ec0;
+  border-radius: 20px;
+  margin: 20px;
+  height: 99%;
+  /* width: 50%; */
+  width: 45%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: width 0.5s linear;
 }
 
 #rightModal.collapsed {
-    width: 30px;
+  width: 30px;
 }
 
 #rightModalButton {
-    position: absolute;
-    top: 50%;
-    left: 0%;
-    transform: translate(0%, -50%);
-    border: none;
-    background-color: white;
-    padding: 6px;
-    z-index: 1;
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  transform: translate(0%, -50%);
+  border: none;
+  background-color: white;
+  padding: 6px;
+  z-index: 1;
 }
 
 #result {
-    display: flex;
-    flex-direction: column;
-    align-Items: center;
-    justify-content: center;
-    height: 100%;
-    width: 100%;
-    transition: opacity 0.3s ease;
-    position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  transition: opacity 0.3s ease;
+  position: relative;
 }
 
-#rightModal.collapsed #result{
-    opacity: 0;
+#rightModal.collapsed #result {
+  opacity: 0;
 }
-
-
 
 #sigChartContainer {
-    width: 90%;
-    height: 40%;
-    margin: 15px;
-    background-color: #f5f5f5;
-    border-radius: 15px;
-    padding: 20px 10px -10px 20px;
-    border: solid #f08c42;
-    border-width: 8px;
+  width: 90%;
+  height: 40%;
+  margin: 15px;
+  background-color: #f5f5f5;
+  border-radius: 15px;
+  padding: 20px 10px -10px 20px;
+  border: solid #f08c42;
+  border-width: 8px;
 }
 
 .sigSlider {
-    /* slider sizing variables for easy tuning */
-    --sig-track-h: 10px;
-    --sig-thumb-d: 18px;
-    -webkit-appearance: none;
-    appearance: none;
-    width: 100%;
-    height: var(--sig-track-h);
-    background: transparent;
-    outline: none;
-    border: none;
-  }
+  /* slider sizing variables for easy tuning */
+  --sig-track-h: 10px;
+  --sig-thumb-d: 18px;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--sig-track-h);
+  background: transparent;
+  outline: none;
+  border: none;
+}
 
-  /* Chrome, Safari, Edge track */
-  .sigSlider::-webkit-slider-runnable-track {
-    height: var(--sig-track-h);
-    background: #ddd;
-    border-radius: 3px;
-  }
-  
-  /* Chrome, Safari, Edge */
-  .sigSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: var(--sig-thumb-d);
-    height: var(--sig-thumb-d);
-    background: #f08c42;     
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-    margin-top: calc((var(--sig-track-h) - var(--sig-thumb-d)) / 2);
-  }
-  
-  /* Firefox */
-  .sigSlider::-moz-range-thumb {
-    width: var(--sig-thumb-d);
-    height: var(--sig-thumb-d);
-    background: #f08c42;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-  }
-  
-  /* Track in Firefox */
-  .sigSlider::-moz-range-track {
-    background: #ddd;
-    height: var(--sig-track-h);
-    border-radius: 3px;
-  }
+/* Chrome, Safari, Edge track */
+.sigSlider::-webkit-slider-runnable-track {
+  height: var(--sig-track-h);
+  background: #ddd;
+  border-radius: 3px;
+}
+
+/* Chrome, Safari, Edge */
+.sigSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--sig-thumb-d);
+  height: var(--sig-thumb-d);
+  background: #f08c42;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  margin-top: calc((var(--sig-track-h) - var(--sig-thumb-d)) / 2);
+}
+
+/* Firefox */
+.sigSlider::-moz-range-thumb {
+  width: var(--sig-thumb-d);
+  height: var(--sig-thumb-d);
+  background: #f08c42;
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+/* Track in Firefox */
+.sigSlider::-moz-range-track {
+  background: #ddd;
+  height: var(--sig-track-h);
+  border-radius: 3px;
+}
 
 .sigHorFlex1 {
-    display: flex;
-    /* justify-content: space-between; */
-    /* margin: 30px 0 0 0; */
-    width: 100%;
-    height: 200px;
+  display: flex;
+  /* justify-content: space-between; */
+  /* margin: 30px 0 0 0; */
+  width: 100%;
+  height: 200px;
 }
 
 .sigHorFlex2 {
-    display: flex;
-    justify-content: space-between;
-    margin: 30px 0 0 22px;
-    width: 95%;
+  display: flex;
+  justify-content: space-between;
+  margin: 30px 0 0 22px;
+  width: 95%;
 }
 
 .sigVerFlex {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    margin: 0 30px 30px 30px;
-    width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin: 0 30px 30px 30px;
+  width: 100%;
 }
 
 .sigParam {
-    font-size: 20px;
-    font-weight: 900;
+  font-size: 20px;
+  font-weight: 900;
 }
 
 .chartButtonContainer {
-    margin: 10px;
-    display: grid;
-    grid-template-columns: 60px 80px;
-    grid-template-rows: 50px 50px 50px;
-    gap: 10px;
+  margin: 10px;
+  display: grid;
+  grid-template-columns: 60px 80px;
+  grid-template-rows: 50px 50px 50px;
+  gap: 10px;
 }
 
 /* #resetSerChartButton {
@@ -900,47 +900,47 @@ header h1 {
 } */
 
 .serChartAutoscrollCluster {
-    grid-row: 1;
-    grid-column: 2;
-    display: grid;
-    grid-template-columns: 20px 50px;
-    grid-template-rows: 1fr 1fr;
-    gap: 3px;
-    height: 50px;
+  grid-row: 1;
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 20px 50px;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  height: 50px;
 }
 
 #increaseSerChartAutoscrollWindowButton {
-    grid-row: 1;
-    grid-column: 1;
-    background-color: #f4c542;
-    border-top-left-radius: 10px;
-    border: none;
-    cursor: pointer;
+  grid-row: 1;
+  grid-column: 1;
+  background-color: #f4c542;
+  border-top-left-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
 #increaseSerChartAutoscrollWindowButton:hover {
-    background-color: #f7d46f;
+  background-color: #f7d46f;
 }
 
 #increaseSerChartAutoscrollWindowButton:active {
-    background-color: #c9a829;
+  background-color: #c9a829;
 }
 
 #decreaseSerChartAutoscrollWindowButton {
-    grid-row: 2;
-    grid-column: 1;
-    background-color: #f4c542;
-    border-bottom-left-radius: 10px;
-    border: none;
-    cursor: pointer;
+  grid-row: 2;
+  grid-column: 1;
+  background-color: #f4c542;
+  border-bottom-left-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
 #decreaseSerChartAutoscrollWindowButton:hover {
-    background-color: #f7d46f;
+  background-color: #f7d46f;
 }
 
 #decreaseSerChartAutoscrollWindowButton:active {
-    background-color: #c9a829;
+  background-color: #c9a829;
 }
 
 /* #autoscrollSerChartButton {
@@ -963,108 +963,216 @@ header h1 {
 } */
 
 #resetSigChartButton {
-    grid-row: 2;
-    grid-column: 1;
-    font-size: 70px;
-    transform: rotate(180deg);
-    border-radius: 10px;
-    background-color: #f08c42;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50px;
-    border: none;
-    cursor: pointer;
+  grid-row: 2;
+  grid-column: 1;
+  font-size: 70px;
+  transform: rotate(180deg);
+  border-radius: 10px;
+  background-color: #f08c42;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+  border: none;
+  cursor: pointer;
 }
 
 #resetSigChartButton:hover {
-    background-color: #f3a66b;
+  background-color: #f3a66b;
 }
 
 #resetSigChartButton:active {
-    background-color: #c76627;
+  background-color: #c76627;
 }
 
 .sigChartAutoscrollCluster {
-    grid-row: 2;
-    grid-column: 2;
-    display: grid;
-    grid-template-columns: 20px 50px;
-    grid-template-rows: 1fr 1fr;
-    gap: 3px;
-    height: 50px;
+  grid-row: 2;
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: 20px 50px;
+  grid-template-rows: 1fr 1fr;
+  gap: 3px;
+  height: 50px;
 }
 
 #increaseSigChartAutoscrollWindowButton {
-    grid-row: 1;
-    grid-column: 1;
-    background-color: #f08c42;
-    border-top-left-radius: 10px;
-    border: none;
-    cursor: pointer;
+  grid-row: 1;
+  grid-column: 1;
+  background-color: #f08c42;
+  border-top-left-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
 #increaseSigChartAutoscrollWindowButton:hover {
-    background-color: #f3a66b;
+  background-color: #f3a66b;
 }
 
 #increaseSigChartAutoscrollWindowButton:active {
-    background-color: #c76627;
+  background-color: #c76627;
 }
 
 #decreaseSigChartAutoscrollWindowButton {
-    grid-row: 2;
-    grid-column: 1;
-    background-color: #f08c42;
-    border-bottom-left-radius: 10px;
-    border: none;
-    cursor: pointer;
+  grid-row: 2;
+  grid-column: 1;
+  background-color: #f08c42;
+  border-bottom-left-radius: 10px;
+  border: none;
+  cursor: pointer;
 }
 
 #decreaseSigChartAutoscrollWindowButton:hover {
-    background-color: #f3a66b;
+  background-color: #f3a66b;
 }
 
 #decreaseSigChartAutoscrollWindowButton:active {
-    background-color: #c76627;
+  background-color: #c76627;
 }
 
 #autoscrollSigChartButton {
-    grid-row: 1 / span 2;
-    grid-column: 2;
-    background-color: #f08c42;
-    border-top-right-radius: 10px;
-    border-bottom-right-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  background-color: #f08c42;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
 }
 
 #autoscrollSigChartButton:hover {
-    background-color: #f3a66b;
+  background-color: #f3a66b;
 }
 
 #autoscrollSigChartButton:active {
-    background-color: #c76627;
+  background-color: #c76627;
 }
 
 #sigLineSubmitButton {
-    grid-row: 3;
-    grid-column: 1 / span 2;
-    padding: 5px;
-    background-color: #f08c42;
-    border-radius: 10px;
-    border: none;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    width: 95%;
+  grid-row: 3;
+  grid-column: 1 / span 2;
+  padding: 5px;
+  background-color: #f08c42;
+  border-radius: 10px;
+  border: none;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 95%;
 }
 
 #sigLineSubmitButton:hover {
-    background-color: #f3a66b;
+  background-color: #f3a66b;
 }
 
 #sigLineSubmitButton:active {
-    background-color: #c76627;
+  background-color: #c76627;
+}
+
+/* Score Bar Graph Styles */
+#scoreBarContainer {
+  position: absolute;
+  /* bottom: 20px; */
+  bottom: -300px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 100px;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.score-bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.score-bar-label {
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.score-bar-background {
+  width: 80px;
+  height: 400px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border: 3px solid white;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+}
+
+.score-bar-fill {
+  width: 100%;
+  height: 0%;
+  background: linear-gradient(to top, #4ecdc4, #45b7d1);
+  border-radius: 7px;
+  transition: height 0.5s ease-out;
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.5);
+}
+
+#scoreBar1.score-bar-fill {
+  background: linear-gradient(to top, #4ecdc4, #45b7d1);
+}
+
+#scoreBar2.score-bar-fill {
+  background: linear-gradient(to top, #ff6b6b, #ff8787);
+}
+
+.score-bar-value {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  min-width: 60px;
+}
+
+/* Win Message Styles */
+#winMessage {
+  position: absolute;
+  /* top: 0; */
+  bottom: -300px;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* background-color: rgba(0, 0, 0, 0.8); */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  pointer-events: none;
+}
+
+.win-message-content {
+  text-align: center;
+  padding: 40px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: winMessagePulse 1s ease-in-out infinite;
+}
+
+.win-message-content h1 {
+  color: white;
+  font-size: 72px;
+  font-weight: 900;
+  margin: 0;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  letter-spacing: 4px;
+}
+
+@keyframes winMessagePulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }

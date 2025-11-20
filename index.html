@@ -23,7 +23,7 @@
                                 <div id="connBox1" class="connBox">+</div>
                                 <div id="connBox2" class="connBox">+</div>
                                 <div id="streamButton" class="gameButton disabled">Stream</div>
-                                <div id="msiNormalGameButton" class="gameButton disabled"> Begin Game</div>
+                                <div id="msiNormalGameButton" class="gameButton disabled"> Play</div>
                                 <div id="resetChartButton">
                                     <span style="position: relative; top: -6px;">&#8635;</span>
                                 </div>
@@ -186,6 +186,27 @@
                         <div id="stimWrapper">
                             <div id="stimDisplay" class="hidden"></div>
                             <canvas id="stimRadialGauge" width="500" height="500" class="hidden"></canvas>
+                            <div id="scoreBarContainer" class="hidden">
+                                <div class="score-bar-wrapper">
+                                    <div class="score-bar-label">Player 1</div>
+                                    <div class="score-bar-background">
+                                        <div id="scoreBar1" class="score-bar-fill"></div>
+                                    </div>
+                                    <div class="score-bar-value" id="scoreValue1">0</div>
+                                </div>
+                                <div class="score-bar-wrapper">
+                                    <div class="score-bar-label">Player 2</div>
+                                    <div class="score-bar-background">
+                                        <div id="scoreBar2" class="score-bar-fill"></div>
+                                    </div>
+                                    <div class="score-bar-value" id="scoreValue2">0</div>
+                                </div>
+                            </div>
+                            <div id="winMessage" class="hiddenFlex">
+                                <div class="win-message-content">
+                                    <h1 id="winMessageText"></h1>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

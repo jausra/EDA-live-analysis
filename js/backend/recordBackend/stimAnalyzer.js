@@ -19,7 +19,13 @@ export class StimAnalyzer {
     this.portState = new Map(); // Stores state for each port: { previousValue, previousTime, dipFlag, dipStartValue, dipStartTime, suppressUntil }
     this.calibrationActive = false; // Global flag for calibration suppression
 
+    // Score tracking per port
+    this.portScores = new Map();
+    this.maxScore = 100; // Score required to win
+    this.gameWon = false; // Track if game has been won
+
     this.setupThreshold();
+    this.initializeScoreBars();
   }
 
   setupThreshold() {
@@ -430,134 +436,86 @@ export class StimAnalyzer {
         if (this.dataProcessor) {
           this.dataProcessor.setDip(dipValue);
         }
-        this.triggerFireworks(dipValue, id);
+        this.updateScoreBar(dipValue, id);
       }
     }
   }
 
-  triggerFireworks(dipValue, portId) {
-    const stimDisplayContainer = document.getElementById(
-      "stimDisplayContainer"
-    );
-    if (stimDisplayContainer) {
-      const threshold = this.getPortThreshold(portId);
-      // Calculate number of fireworks based on dip amplitude
-      // Minimum 1 firework, maximum 8 fireworks
-      // Scale based on how much the dip exceeds the threshold
-      const excessOverThreshold = dipValue - threshold;
-      const maxExcess = 50; // Assume 50 is a very large dip
-      const normalizedExcess = Math.min(excessOverThreshold / maxExcess, 1);
-      const fireworkCount = Math.max(1, Math.ceil(1 + normalizedExcess * 7));
+  initializeScoreBars() {
+    // Initialize scores for each port
+    this.portScores.set("sensor1", 0);
+    this.portScores.set("sensor2", 0);
 
-      console.log(
-        `Triggering ${fireworkCount} fireworks for dip value: ${dipValue} (threshold: ${threshold})`
-      );
-
-      // Create multiple fireworks with slight delays for visual effect
-      for (let i = 0; i < fireworkCount; i++) {
-        setTimeout(() => {
-          this.createFirework(stimDisplayContainer);
-        }, i * 100); // 100ms delay between each firework
-      }
+    // Get score bar elements
+    const scoreBarContainer = document.getElementById("scoreBarContainer");
+    if (scoreBarContainer) {
+      scoreBarContainer.classList.remove("hidden");
+      this.updateScoreBarDisplay("sensor1");
+      this.updateScoreBarDisplay("sensor2");
     }
   }
 
-  triggerFirework() {
-    const stimDisplayContainer = document.getElementById(
-      "stimDisplayContainer"
-    );
-    if (stimDisplayContainer) {
-      this.createFirework(stimDisplayContainer);
+  updateScoreBar(dipValue, portId) {
+    if (this.gameWon) return; // Don't update if game is already won
+
+    // Get current score for this port
+    const currentScore = this.portScores.get(portId) || 0;
+    const newScore = currentScore + dipValue;
+    this.portScores.set(portId, newScore);
+
+    // Update the bar display
+    this.updateScoreBarDisplay(portId);
+
+    // Check for win condition
+    if (newScore >= this.maxScore) {
+      this.showWinMessage(portId);
     }
   }
 
-  createFirework(container) {
-    // Get random position within the container
-    const containerRect = container.getBoundingClientRect();
-    const maxX = containerRect.width - 50; // Leave some margin
-    const maxY = containerRect.height - 50;
-    const randomX = Math.random() * maxX;
-    const randomY = Math.random() * maxY;
+  updateScoreBarDisplay(portId) {
+    const score = this.portScores.get(portId) || 0;
+    const percentage = Math.min((score / this.maxScore) * 100, 100);
 
-    // Create firework container
-    const firework = document.createElement("div");
-    firework.style.position = "absolute";
-    firework.style.top = `${randomY}px`;
-    firework.style.left = `${randomX}px`;
-    firework.style.transform = "translate(-50%, -50%)";
-    firework.style.pointerEvents = "none";
-    firework.style.zIndex = "1000";
-    firework.style.width = "0";
-    firework.style.height = "0";
+    // Map portId to bar number
+    const barNumber = portId === "sensor1" ? "1" : "2";
+    const scoreBar = document.getElementById(`scoreBar${barNumber}`);
+    const scoreValue = document.getElementById(`scoreValue${barNumber}`);
 
-    // Create particles
-    const particleCount = 50;
-    const colors = [
-      "#ff6b6b",
-      "#4ecdc4",
-      "#45b7d1",
-      "#96ceb4",
-      "#ffeaa7",
-      "#dda0dd",
-      "#98d8c8",
-    ];
-
-    for (let i = 0; i < particleCount; i++) {
-      const particle = document.createElement("div");
-      particle.style.position = "absolute";
-      particle.style.width = "6px";
-      particle.style.height = "6px";
-      particle.style.borderRadius = "50%";
-      particle.style.backgroundColor =
-        colors[Math.floor(Math.random() * colors.length)];
-      particle.style.boxShadow = "0 0 10px currentColor";
-      particle.style.left = "0";
-      particle.style.top = "0";
-
-      // Random direction and distance
-      const angle = (Math.PI * 2 * i) / particleCount;
-      const velocity = 100 + Math.random() * 150;
-      const lifetime = 1500 + Math.random() * 1000;
-
-      const x = Math.cos(angle) * velocity;
-      const y = Math.sin(angle) * velocity;
-
-      firework.appendChild(particle);
-
-      // Animate particle
-      const animation = particle.animate(
-        [
-          {
-            transform: "translate(0, 0) scale(1)",
-            opacity: 1,
-          },
-          {
-            transform: `translate(${x}px, ${y}px) scale(0)`,
-            opacity: 0,
-          },
-        ],
-        {
-          duration: lifetime,
-          easing: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-        }
-      );
-
-      // Ensure particle is removed after animation
-      animation.addEventListener("finish", () => {
-        if (particle.parentNode) {
-          particle.parentNode.removeChild(particle);
-        }
-      });
+    if (scoreBar) {
+      scoreBar.style.height = `${percentage}%`;
     }
 
-    container.appendChild(firework);
+    if (scoreValue) {
+      scoreValue.textContent = Math.round(score);
+    }
+  }
 
-    // Remove firework container after animation
-    setTimeout(() => {
-      if (firework.parentNode) {
-        firework.parentNode.removeChild(firework);
-      }
-    }, 3000);
+  showWinMessage(portId) {
+    if (this.gameWon) return; // Prevent multiple win messages
+
+    this.gameWon = true;
+    const playerNumber = portId === "sensor1" ? "1" : "2";
+    const winMessage = document.getElementById("winMessage");
+    const winMessageText = document.getElementById("winMessageText");
+
+    if (winMessage && winMessageText) {
+      winMessageText.textContent = `Player ${playerNumber} Wins!`;
+      winMessage.classList.remove("hiddenFlex");
+    }
+  }
+
+  resetScores() {
+    this.portScores.set("sensor1", 0);
+    this.portScores.set("sensor2", 0);
+    this.gameWon = false;
+    this.updateScoreBarDisplay("sensor1");
+    this.updateScoreBarDisplay("sensor2");
+
+    // Hide win message
+    const winMessage = document.getElementById("winMessage");
+    if (winMessage) {
+      winMessage.classList.add("hidden");
+    }
   }
 
   //Getters.

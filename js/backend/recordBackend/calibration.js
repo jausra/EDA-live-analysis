@@ -859,7 +859,8 @@ export class CalibrationManager {
     const breathingCue = document.createElement("div");
     breathingCue.id = "breathingCue";
     breathingCue.style.position = "absolute";
-    breathingCue.style.top = "95%"; // Position below the center where calibration bar is
+    // breathingCue.style.top = "95%"; // Position below the center where calibration bar is
+    breathingCue.style.top = "30%";
     breathingCue.style.left = "50%";
     breathingCue.style.transform = "translate(-50%, -50%)";
     breathingCue.style.zIndex = "500"; // Lower than fireworks (1000) but above other content
@@ -875,8 +876,10 @@ export class CalibrationManager {
     breathingCircle.style.width = "120px";
     breathingCircle.style.height = "120px";
     breathingCircle.style.borderRadius = "50%";
-    breathingCircle.style.border = "4px solid #4ecdc4";
-    breathingCircle.style.backgroundColor = "rgba(78, 205, 196, 0.2)";
+    // breathingCircle.style.border = "4px solid #4ecdc4";
+    breathingCircle.style.border = "4px solid #fff";
+    // breathingCircle.style.backgroundColor = "rgba(78, 205, 196, 0.2)";
+    breathingCircle.style.backgroundColor = "rgba(255, 255, 255, 0.2)";
     breathingCircle.style.transition = "all 2s ease-in-out";
     breathingCircle.style.display = "flex";
     breathingCircle.style.alignItems = "center";
@@ -887,7 +890,8 @@ export class CalibrationManager {
 
     // Add breathing text
     const breathingText = document.createElement("div");
-    breathingText.style.color = "#4ecdc4";
+    // breathingText.style.color = "#4ecdc4";
+    breathingText.style.color = "#fff";
     breathingText.style.fontSize = "18px";
     breathingText.style.fontWeight = "bold";
     breathingText.style.textAlign = "center";
@@ -900,7 +904,7 @@ export class CalibrationManager {
     } else if (phase === "game") {
       breathingText.innerHTML = "Take a slow deep breath<br>Exhale fast";
       breathingCircle.textContent = "🌬️";
-      breathingCue.style.opacity = "0.7"; // Make it more subtle for game phase
+      breathingCue.style.opacity = "1"; // Make it more subtle for game phase
       breathingCircle.style.fontSize = "64px"; // Maximize emoji size
     }
 
@@ -943,8 +947,8 @@ export class CalibrationManager {
           if (document.getElementById("breathingCircle")) {
             breathingCycle();
           }
-        }, 4000);
-      }, 4000);
+        }, 2000);
+      }, 2000);
     };
 
     breathingCycle();
