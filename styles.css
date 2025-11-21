@@ -703,7 +703,8 @@ input {
 
 #stimWrapper {
   position: relative;
-  width: 500px;
+  /* width: 500px; */
+  width: 100%;
   height: 500px;
   margin-top: 20px;
 }
@@ -1072,12 +1073,13 @@ input {
 /* Score Bar Graph Styles */
 #scoreBarContainer {
   position: absolute;
-  /* bottom: 20px; */
   bottom: -300px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* left: 50%;
+  transform: translateX(-50%); */
+  width: 100%;
   display: flex;
-  gap: 100px;
+  justify-content: space-evenly;
+  /* gap: 50px; */
   z-index: 100;
   pointer-events: none;
 }
@@ -1118,7 +1120,7 @@ input {
 }
 
 #scoreBar1.score-bar-fill {
-  background: linear-gradient(to top, #4ecdc4, #45b7d1);
+  background: linear-gradient(to top, #4e7acd, #4566d1);
 }
 
 #scoreBar2.score-bar-fill {
@@ -1131,6 +1133,24 @@ input {
   font-weight: bold;
   text-align: center;
   min-width: 60px;
+}
+
+.score-bar-max {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  bottom: -350px;
+  justify-content: center;
+  width: 100%;
+}
+
+.score-bar-max__title {
+  font-size: 1.3rem;
+  margin-top: 6px;
+}
+
+.score-bar-max__input {
+  width: 75px;
 }
 
 /* Win Message Styles */

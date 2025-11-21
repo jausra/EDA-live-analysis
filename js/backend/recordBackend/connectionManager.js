@@ -7,6 +7,7 @@ export class ConnectionManager {
     this.connBox2 = document.getElementById("connBox2");
     this.portStates = new Map();
     this.gameButtons = document.querySelectorAll(".gameButton");
+    this.streamButton = document.getElementById("streamButton");
 
     this.initConnectionBoxes();
   }
@@ -59,7 +60,8 @@ export class ConnectionManager {
         console.log("Serial port did not connect");
       }
     }
-    this.updateGameButtonClickability();
+    // this.updateGameButtonClickability();
+    this.updateStreamButtonClickability();
   }
 
   //Method to control connection button during hover.
@@ -106,6 +108,10 @@ export class ConnectionManager {
         button.classList.toggle("disabled", false);
       }
     });
+  }
+
+  updateStreamButtonClickability() {
+    this.streamButton.classList.toggle("disabled", false);
   }
 
   //Method to clear data arrays associated with a port.

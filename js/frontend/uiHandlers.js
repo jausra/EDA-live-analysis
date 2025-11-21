@@ -143,8 +143,8 @@ export class UIHandlers {
     //Normal game button.
     const msiNormalGameButton = document.getElementById("msiNormalGameButton");
     if (msiNormalGameButton) {
-      msiNormalGameButton.addEventListener("click", () => {
-        this.msiHandleGameButtonClick({
+      msiNormalGameButton.addEventListener("click", async () => {
+        await this.msiHandleGameButtonClick({
           gameTitleText: "Normal",
           presetName: "Normal",
         });
@@ -221,40 +221,65 @@ export class UIHandlers {
   }
 
   msiHandleStreamButtonClick() {
+    streamButton.classList.toggle("disabled", true);
+    msiNormalGameButton.classList.toggle("disabled", false);
     this.calibrationManager.msiStartStream();
   }
 
   //Method to handle when a game button or the back button is clicked.
-  msiHandleGameButtonClick({ gameTitleText = "", presetName = null } = {}) {
-    // this.toggleHideGameButtons(); //Hide the game buttons and the port connection buttons.
+  async msiHandleGameButtonClick({
+    gameTitleText = "",
+    presetName = null,
+  } = {}) {
+    try {
+      // this.toggleHideGameButtons(); //Hide the game buttons and the port connection buttons.
 
-    // const gameTitleContainer = document.getElementById("gameTitleContainer");
-    // const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
-    // const stimStartStopButton = document.getElementById("stimStartStopButton");
-    // const saveDataButton = document.getElementById("saveDataButton");
-    // const gameTitle = document.getElementById("gameTitle");
+      // const gameTitleContainer = document.getElementById("gameTitleContainer");
+      // const stimPauseResumeButton = document.getElementById("stimPauseResumeButton");
+      // const stimStartStopButton = document.getElementById("stimStartStopButton");
+      // const saveDataButton = document.getElementById("saveDataButton");
+      // const gameTitle = document.getElementById("gameTitle");
 
-    // if (gameTitleContainer) gameTitleContainer.classList.toggle("hiddenFlex"); //Show or hide the game title.
-    // // if (this.calibrationManager) this.calibrationManager.toggleCalibrateButtonVisibility(); //Show or hide the calibrate button.
-    // if (stimPauseResumeButton) stimPauseResumeButton.classList.toggle("hiddenFlex"); //Show or hide the pause button.
-    // if (stimStartStopButton) stimStartStopButton.classList.toggle("hiddenFlex"); //Show or hide the start button.
-    // if (saveDataButton) saveDataButton.classList.toggle("hiddenFlex"); //Show or hide the save button
-    // if (gameTitle) gameTitle.textContent = gameTitleText; //Set the game title.
+      // if (gameTitleContainer) gameTitleContainer.classList.toggle("hiddenFlex"); //Show or hide the game title.
+      // // if (this.calibrationManager) this.calibrationManager.toggleCalibrateButtonVisibility(); //Show or hide the calibrate button.
+      // if (stimPauseResumeButton) stimPauseResumeButton.classList.toggle("hiddenFlex"); //Show or hide the pause button.
+      // if (stimStartStopButton) stimStartStopButton.classList.toggle("hiddenFlex"); //Show or hide the start button.
+      // if (saveDataButton) saveDataButton.classList.toggle("hiddenFlex"); //Show or hide the save button
+      // if (gameTitle) gameTitle.textContent = gameTitleText; //Set the game title.
 
-    // if (presetName && this.stimPresets) {
-    //     this.stimPresets.msiApplyPreset(presetName); //Apply the stim items based on the game.
-    //     if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button.
-    //     if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items.
-    // }
+      // if (presetName && this.stimPresets) {
+      //     this.stimPresets.msiApplyPreset(presetName); //Apply the stim items based on the game.
+      //     if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button.
+      //     if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items.
+      // }
 
-    // if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button.
-    // if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items.
+      // if (this.calibrationManager) this.calibrationManager.enableCalibrateButton(); //Enable the calibration button.
+      // if (this.stimManager) this.stimManager.renderStimItemContainer(); //Show the stim items.
 
-    // if (gameTitleText === "" && this.stimManager) { //If you click the back button, hide the stim items (game buttons will be in their place).
-    //     this.stimManager.clearStimItems();
-    // }
+      // if (gameTitleText === "" && this.stimManager) { //If you click the back button, hide the stim items (game buttons will be in their place).
+      //     this.stimManager.clearStimItems();
+      // }
+      if (msiNormalGameButton.innerText === "Play") {
+        msiNormalGameButton.innerHTML = "Reset";
+        this.calibrationManager.msiBeginCal(presetName);
+      } else if (msiNormalGameButton.innerText === "Reset") {
+        streamButton.classList.toggle("disabled", false);
+        msiNormalGameButton.classList.toggle("disabled", true);
+        msiNormalGameButton.innerHTML = "Play";
 
-    this.calibrationManager.msiBeginCal(presetName);
+        for (const [id, state] of this.connectionManager
+          .getPortStates()
+          .entries()) {
+          await this.stopSerial(id);
+        }
+        this.clearSerialChart(this.connectionManager);
+
+        this.calibrationManager.hideBreathingCue();
+        this.stimAnalyzer.resetScores();
+      }
+    } catch (error) {
+      console.error("Could not read from serial port", error);
+    }
   }
 
   async handleImportData(event) {

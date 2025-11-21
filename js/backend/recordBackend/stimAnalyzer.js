@@ -453,6 +453,25 @@ export class StimAnalyzer {
       this.updateScoreBarDisplay("sensor1");
       this.updateScoreBarDisplay("sensor2");
     }
+
+    this.maxScoreInput = document.getElementById("score-bar-max-input");
+    this.maxScoreInput.value = this.maxScore;
+    this.maxScoreInput.addEventListener("change", (e) => {
+      this.handleMaxScoreInputChange(e);
+    });
+  }
+
+  handleMaxScoreInputChange(e) {
+    let max = e.target.value;
+
+    if (max < 0) {
+      max = 0;
+      e.target.value = max;
+    }
+
+    this.maxScore = max;
+    this.updateScoreBarDisplay("sensor1");
+    this.updateScoreBarDisplay("sensor2");
   }
 
   updateScoreBar(dipValue, portId) {
@@ -514,7 +533,7 @@ export class StimAnalyzer {
     // Hide win message
     const winMessage = document.getElementById("winMessage");
     if (winMessage) {
-      winMessage.classList.add("hidden");
+      winMessage.classList.add("hiddenFlex");
     }
   }
 
