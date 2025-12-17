@@ -221,6 +221,8 @@ export class CalibrationManager {
       if (state) {
         await this.modifyOffset("sensor1", state);
       }
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.endCalibrationSuppression(Date.now(), "sensor1");
       if (this.dataProcessor) this.dataProcessor.setPhase("game");
     });
 
@@ -264,6 +266,8 @@ export class CalibrationManager {
       if (state) {
         await this.modifyOffset("sensor2", state);
       }
+      if (this.stimAnalyzer)
+        this.stimAnalyzer.endCalibrationSuppression(Date.now(), "sensor2");
       if (this.dataProcessor) this.dataProcessor.setPhase("game");
     });
   }

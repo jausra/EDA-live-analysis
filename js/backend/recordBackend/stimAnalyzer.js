@@ -348,10 +348,12 @@ export class StimAnalyzer {
   }
 
   analyzeIncomingDatapoint(value, now, id, connectionManager) {
+    console.log("Analyzing Incoming Data Point");
     const portState = this.getPortState(id);
 
     // Reset dip value to 0
     if (!portState.dipFlag && this.dataProcessor) {
+      console.log("Option 1");
       this.dataProcessor.setDip(0);
     }
 
@@ -379,6 +381,7 @@ export class StimAnalyzer {
     } else {
       // This will be true if the value starts decreasing
       if (portState.dipFlag) {
+        console.log("Dip FLAYG!");
         // End of delta
         let delta = portState.previousValue - portState.dipStartValue;
 
@@ -414,6 +417,7 @@ export class StimAnalyzer {
   beginCalibrationSuppression() {
     // Reset dip flags for all ports
     for (const [id, portState] of this.portState.entries()) {
+      console.log(id);
       portState.dipFlag = false;
     }
     this.calibrationActive = true;
@@ -423,10 +427,12 @@ export class StimAnalyzer {
     const portState = this.getPortState(portId);
     portState.dipFlag = false;
     portState.suppressUntil = now + 2000;
+    this.calibrationActive = false;
     // Note: calibrationActive is kept global, but individual ports can have suppressUntil
   }
 
   calculateDeltaSignificance(id, connectionManager) {
+    console.log("Calculating Delta Significance");
     const state = connectionManager.getPortStates().get(id);
     if (state) {
       const threshold = this.getPortThreshold(id);
@@ -475,6 +481,7 @@ export class StimAnalyzer {
   }
 
   updateScoreBar(dipValue, portId) {
+    console.log("Updating Score Bar");
     if (this.gameWon) return; // Don't update if game is already won
 
     // Get current score for this port
